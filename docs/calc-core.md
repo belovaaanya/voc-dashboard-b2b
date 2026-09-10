@@ -20,6 +20,7 @@ DOM, загрузку данных и форматирование строк я
 | [`site/js/insights.js`](../site/js/insights.js) | дневные изменения VOC, причины и сортировка инсайтов | `D-10`, `D-16`, `D-23`, `D-24` |
 | [`site/js/distribution.js`](../site/js/distribution.js) | распределение 1–5 с согласованными долями для вывода | `D-21`, `D-40`, `V-22` |
 | [`site/js/conclusions.js`](../site/js/conclusions.js) | сильнейшие положительные и отрицательные вклады | `D-10`, `V-16` |
+| [`site/js/verbatim.js`](../site/js/verbatim.js) | карточки проблем, join по `voc_ccode` и поиск в детализации | `D-05`, `D-10`, `D-17`, `D-44` |
 | [`site/js/sufficiency.js`](../site/js/sufficiency.js) | достаточность выборки | `D-25` |
 | [`site/js/round.js`](../site/js/round.js) | округление на выводе | `D-21` |
 

@@ -7,7 +7,8 @@
 [blocks-antidrivers](blocks-antidrivers.md), инсайты — в
 [blocks-insights](blocks-insights.md), распределение — в
 [blocks-distribution](blocks-distribution.md), главный вывод — в
-[blocks-conclusion](blocks-conclusion.md), прямая речь — в своём слайсе.
+[blocks-conclusion](blocks-conclusion.md), прямая речь — в
+[blocks-verbatim](blocks-verbatim.md).
 
 Связанные документы: [design-spec](design-spec.md) (замеры и палитра),
 [design-validation](design-validation.md) (`V-xx`), [decisions](decisions.md)
@@ -37,6 +38,7 @@ site/
 ├── js/insights.js        дневные изменения VOC и их причины
 ├── js/distribution.js    доли 1–5 для вывода с согласованным округлением
 ├── js/conclusions.js     сильнейшие факторы роста и снижения VOC
+├── js/verbatim.js        карточки проблем, join комментариев и поиск
 ├── js/dimensions.js      список измерений и вывод их значений из данных
 ├── js/labels.js          подписи из справочника с fallback на код
 ├── js/block.js           карточка блока и три служебных состояния
@@ -109,7 +111,7 @@ python3 -m http.server 4173 --directory site
 | --- | --- |
 | `id` | уникальный идентификатор, он же ключ в карте блоков |
 | `title` | заголовок по умолчанию; блок вправе переопределить его сам |
-| `host` | контейнер в `index.html`: `metrics`, `rail-top`, `main`, `rail-main` |
+| `host` | контейнер в `index.html`: `metrics`, `rail-top`, `main`, `rail-main`, `full` |
 | `modifier` | CSS-модификаторы карточки |
 | `render` | `(block, context) => void`; без него блок показывает заглушку слайса |
 
@@ -136,6 +138,8 @@ python3 -m http.server 4173 --directory site
 | `segments` | коды сегментов в порядке убывания объёма |
 | `select` | `(overrides) => { rows, previous, period, previousPeriod }` — свой подсрез и его effective period, см. ниже |
 | `setState` | `(next) => void`: записать состояние в URL и перерисовать всё |
+| `verbatim` | `{ status, data, error }`: состояние lazy-источника клиентских текстов |
+| `requestVerbatim` | `() => Promise`: запустить единственную загрузку `verbatim` и перерисовать текстовые блоки |
 
 `select` принимает частичное состояние поверх текущего и возвращает срез за оба
 периода сразу. Без `from` и `to` он использует global period из URL. Пара
