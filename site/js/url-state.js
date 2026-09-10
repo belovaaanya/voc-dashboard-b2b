@@ -61,3 +61,15 @@ export function syncState(state) {
 export function onStateChange(handler) {
   window.addEventListener('popstate', () => handler(readState()));
 }
+
+/*
+  Точечная замена одного измерения: блок, который ставит свой фильтр, не должен
+  знать про остальные и уж тем более их пересобирать. Пустой список убирает
+  параметр целиком — иначе в URL остаётся `segment=` без значения.
+*/
+export function withFilter(filters, dimension, values) {
+  const next = { ...filters };
+  if (values?.length) next[dimension] = values;
+  else delete next[dimension];
+  return next;
+}

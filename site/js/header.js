@@ -8,14 +8,8 @@
 
 import { formatBuildTime, formatCount, formatDateRange } from './format.js';
 import { CHANNEL_DIMENSION } from './dimensions.js';
+import { element } from './dom.js';
 import { SOURCE_FIXTURE } from './loader.js';
-
-function element(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text) node.textContent = text;
-  return node;
-}
 
 function renderChannels(channels, state, label, onChange) {
   const group = element('div', 'channels');
@@ -85,19 +79,15 @@ function renderSource(source, dataError) {
 }
 
 export function renderHeader(host, context) {
-  const { channels, dimensions, state, label, manifest, source, dataError, rowsInSlice, onChannelChange } =
+  const { channels, dimensions, state, period, label, manifest, source, dataError, rowsInSlice, onChannelChange } =
     context;
 
   const head = element('header', 'shell-head');
 
   const bar = element('div', 'shell-head__bar');
   bar.append(renderChannels(channels, state, label, onChannelChange));
-  bar.append(
-    renderFilters(dimensions, state, label, {
-      from: state.from ?? manifest.period?.from,
-      to: state.to ?? manifest.period?.to,
-    }),
-  );
+  /* Период — тот же разрешённый период, по которому считают карточки: иначе шапка и цифры расходятся */
+  bar.append(renderFilters(dimensions, state, label, period));
   head.append(bar);
 
   const meta = element('div', 'shell-head__meta');

@@ -12,7 +12,8 @@ Figma, данные — из файлов рядом с сайтом, backend н
 | [docs/design-validation.md](docs/design-validation.md) | **перед вёрсткой любого блока** — расхождения макета `V-xx` |
 | [docs/design-spec.md](docs/design-spec.md) | замеры сетки и блоков, палитра |
 | [docs/data-model.md](docs/data-model.md) | структура выгрузки, расчёты, подводные камни |
-| [docs/ui-shell.md](docs/ui-shell.md) | каркас: токены, сетка, загрузка, состояния, URL |
+| [docs/ui-shell.md](docs/ui-shell.md) | каркас: токены, сетка, загрузка, состояния, URL; **контракт блока — перед новым блоком** |
+| [docs/blocks-metrics.md](docs/blocks-metrics.md) | карточки метрик: композиция, план, кликабельность |
 | [docs/figma-sources.md](docs/figma-sources.md) | node ID, как перечитать макет |
 | [docs/calc-core.md](docs/calc-core.md) | **перед правкой чисел** — модули расчётов, инварианты, методика вклада |
 | [docs/slice-gate.md](docs/slice-gate.md) | проверка в конце слайса |

@@ -1,36 +1,42 @@
 /*
-  Сборка каркаса. Блоки создаются один раз, при смене состояния меняется только
-  их содержимое.
+  Сборка каркаса и реестр блоков.
 
-  Что здесь ещё нет: график динамики, тепловая карта, значения метрик, топ
-  проблем, прямая речь, инсайты — следующие слайсы встают в эти же блоки.
+  Блок — модуль `blocks/<id>.js` с функцией `render(block, context)`. Реестр
+  ниже — единственное место, где блок объявляется, и все блоки получают **один
+  и тот же** объект контекста: разойтись в том, что считает срез, они не могут
+  по построению. Контракт контекста — docs/ui-shell.md.
+
+  Добавить блок = новый файл и одна строка в BLOCKS. Строки без `render` —
+  места следующих слайсов.
 */
 
 import { EMPTY, ERROR, LOADING, READY, createBlock } from './block.js';
-import { CHANNEL_DIMENSION, availableDimensions, channelsOf } from './dimensions.js';
+import { renderVocChannel } from './blocks/voc-channel.js';
+import { vocSegment } from './blocks/voc-segment.js';
+import { tally } from './blocks/tally.js';
+import { availableDimensions, channelsOf } from './dimensions.js';
 import { renderHeader } from './header.js';
 import { createLabels } from './labels.js';
 import { hasRole, loadRatings, loadReference, loadSource } from './loader.js';
-import { onStateChange, readState, syncState, writeState } from './url-state.js';
+import { groupBy } from './metrics.js';
+import { customPeriod, defaultPeriod, previousPeriod } from './period.js';
+import { onStateChange, readState, syncState, toSearch, writeState } from './url-state.js';
 
 const NEXT_SLICE = 'Блок появится в следующем слайсе — здесь только каркас.';
 
 const BLOCKS = [
-  { id: 'voc-channel', title: 'VOC канала', host: 'metrics', modifier: 'card--metric' },
-  { id: 'voc-segment-1', title: 'VOC сегмента', host: 'metrics', modifier: 'card--metric' },
-  { id: 'voc-segment-2', title: 'VOC сегмента', host: 'metrics', modifier: 'card--metric' },
-  { id: 'voc-segment-3', title: 'VOC сегмента', host: 'metrics', modifier: 'card--metric' },
+  { id: 'voc-channel', title: 'VOC канала', host: 'metrics', modifier: 'card--metric card--metric-big', render: renderVocChannel },
+  { id: 'voc-segment-1', title: 'VOC сегмента', host: 'metrics', modifier: 'card--metric', render: vocSegment(0) },
+  { id: 'voc-segment-2', title: 'VOC сегмента', host: 'metrics', modifier: 'card--metric', render: vocSegment(1) },
+  { id: 'voc-segment-3', title: 'VOC сегмента', host: 'metrics', modifier: 'card--metric', render: vocSegment(2) },
+  { id: 'ratings-count', title: 'Оценок', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('count') },
+  { id: 'low-ratings', title: 'Низких оценок', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('lowCount') },
+  { id: 'share-5', title: 'Доля 5★', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('share5') },
   { id: 'summary', title: 'Главный вывод', host: 'rail-top' },
   { id: 'dynamics', title: 'Динамика VOC', host: 'main' },
   { id: 'antidrivers', title: 'Антидрайверы', host: 'main' },
   { id: 'insights', title: 'Инсайты', host: 'rail-main' },
 ];
-
-function inPeriod(row, state) {
-  if (state.from && row.appeal_date < state.from) return false;
-  if (state.to && row.appeal_date > state.to) return false;
-  return true;
-}
 
 function matchesFilters(row, state, dimensions, reference) {
   for (const dimension of dimensions) {
@@ -42,13 +48,21 @@ function matchesFilters(row, state, dimensions, reference) {
   return true;
 }
 
-function slice(rows, state, dimensions, reference) {
+function sliceRows(rows, state, period, dimensions, reference) {
   return rows.filter(
     (row) =>
       (!state.channel || row.channel === state.channel) &&
-      inPeriod(row, state) &&
+      row.appeal_date >= period.from &&
+      row.appeal_date <= period.to &&
       matchesFilters(row, state, dimensions, reference),
   );
+}
+
+/* Порядок сегментных карточек — по числу оценок: крупный сегмент идёт первым, как в макете (D-01) */
+function segmentsByVolume(rows) {
+  return groupBy(rows.filter((row) => row.segment), (row) => row.segment)
+    .sort((left, right) => right.ratings.length - left.ratings.length)
+    .map((group) => group.key);
 }
 
 function main() {
@@ -68,7 +82,10 @@ function main() {
   }
 
   const setAll = (state, detail) => {
-    for (const block of blocks.values()) block.setState(state, detail);
+    for (const block of blocks.values()) {
+      block.setNote(null);
+      block.setState(state, detail);
+    }
   };
 
   setAll(LOADING);
@@ -85,49 +102,87 @@ function main() {
       const label = createLabels(reference);
       const dimensions = availableDimensions(rows, reference);
       const channels = channelsOf(rows);
+      const segments = segmentsByVolume(rows);
+      /* Период по умолчанию — из манифеста, а не из часов машины (D-41) */
+      const fallbackPeriod = defaultPeriod(source.manifest.period);
 
-      /*
-        Заголовки сегментных карточек — из данных и справочника подписей (D-01, D-02).
-        Порядок по числу оценок: так крупный сегмент идёт первым, как в макете
-      */
-      const volumeBySegment = new Map();
-      for (const row of rows) {
-        if (row.segment) volumeBySegment.set(row.segment, (volumeBySegment.get(row.segment) ?? 0) + 1);
-      }
-      const segments = [...volumeBySegment.entries()].sort((a, b) => b[1] - a[1]).map(([code]) => code);
-      segments.slice(0, 3).forEach((segment, index) => {
-        blocks.get(`voc-segment-${index + 1}`).setTitle(`VOC ${label('segment', segment)}`);
-      });
+      function render(requested) {
+        const period =
+          requested.from && requested.to ? customPeriod(requested.from, requested.to) : fallbackPeriod;
+        const state = {
+          ...requested,
+          channel: requested.channel && channels.includes(requested.channel) ? requested.channel : channels[0] ?? null,
+          from: period.from,
+          to: period.to,
+        };
+        /* Достроенное по умолчанию состояние дописывается в URL: пересланная ссылка обязана быть полной (D-31) */
+        if (toSearch(state) !== toSearch(requested)) syncState(state);
 
-      const render = (state) => {
-        const active = state.channel && channels.includes(state.channel) ? state : { ...state, channel: channels[0] ?? null };
-        if (active !== state) syncState(active);
-        const rowsInSlice = slice(rows, active, dimensions, reference);
-        blocks.get('voc-channel').setTitle(
-          active.channel ? `VOC ${label(CHANNEL_DIMENSION, active.channel)}` : 'VOC канала',
-        );
+        const previous = previousPeriod(period);
+        const select = (overrides = {}) => {
+          const merged = { ...state, ...overrides };
+          return {
+            rows: sliceRows(rows, merged, period, dimensions, reference),
+            previous: sliceRows(rows, merged, previous, dimensions, reference),
+          };
+        };
+        const current = select();
+
+        const setState = (next) => {
+          writeState(next);
+          renderSafely(next);
+        };
+
+        const context = {
+          rows,
+          slice: current.rows,
+          previousSlice: current.previous,
+          state,
+          period,
+          previousPeriod: previous,
+          reference,
+          label,
+          dimensions,
+          segments,
+          select,
+          setState,
+        };
 
         renderHeader(hosts.header, {
           channels,
           dimensions,
-          state: active,
+          state,
+          period,
           label,
           manifest: source.manifest,
           source: source.source,
           dataError: source.dataError,
-          rowsInSlice: rowsInSlice.length,
-          onChannelChange: (channel) => {
-            const next = { ...active, channel };
-            writeState(next);
-            render(next);
-          },
+          rowsInSlice: context.slice.length,
+          onChannelChange: (channel) => setState({ ...state, channel }),
         });
 
-        setAll(rowsInSlice.length ? READY : EMPTY, rowsInSlice.length ? NEXT_SLICE : undefined);
-      };
+        for (const spec of BLOCKS) {
+          const block = blocks.get(spec.id);
+          if (spec.render) spec.render(block, context);
+          else block.setState(context.slice.length ? READY : EMPTY, context.slice.length ? NEXT_SLICE : undefined);
+        }
+      }
 
-      render(readState());
-      onStateChange(render);
+      /*
+        Период живёт в URL и правится руками (D-31), поэтому вывернутый диапазон
+        приходит и после загрузки — на popstate. Ядро на нём падает намеренно,
+        и падение обязано стать состоянием ошибки, а не необработанным исключением
+      */
+      function renderSafely(state) {
+        try {
+          render(state);
+        } catch (error) {
+          setAll(ERROR, error.message);
+        }
+      }
+
+      renderSafely(readState());
+      onStateChange(renderSafely);
     })
     .catch((error) => {
       /* Шапка тоже строится из данных, поэтому при их отсутствии несёт только диагностику */

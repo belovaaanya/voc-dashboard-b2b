@@ -1,0 +1,192 @@
+/*
+  Стили блоков. Отдельно от shell.css намеренно: блоки пишутся параллельными
+  слайсами, и каждый дописывает свою секцию сюда, не трогая каркас.
+
+  Цвет и размеры — только через токены из tokens.css.
+*/
+
+/* ── Карточка метрики ──────────────────────────────────────────────── */
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.metric__value {
+  color: var(--color-text-strong);
+  font-size: var(--text-metric-sm);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
+
+.metric__meta {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* Пометка недостаточной выборки несёт текст и величину интервала, а не только цвет (D-25, D-26) */
+.metric__warning {
+  padding-inline-start: var(--space-2);
+  border-inline-start: var(--space-1) solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+/* Значение слева и крупно, служебные строки — колонкой справа (design-spec §3.1) */
+.metric--big {
+  flex-flow: row wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.metric__value--big {
+  font-size: var(--text-metric-lg);
+}
+
+.metric__aside {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  text-align: end;
+}
+
+.metric--segment > .trend,
+.metric--segment > .metric__meta {
+  align-self: flex-end;
+}
+
+.metric--tally .metric__value {
+  font-size: var(--text-metric-xs);
+}
+
+/*
+  Содержимое карточек метрик прижато к низу: заголовки из справочника (D-02)
+  занимают разное число строк, и без этого значения соседних карточек стоят на
+  разной высоте. Бейдж при этом остаётся на первой строке заголовка
+*/
+.card--metric .card__body {
+  margin-block-start: auto;
+}
+
+/* Большая карточка занимает обе строки метрик, и у её содержимого нет соседа по низу */
+.card--metric-big .card__body {
+  margin-block: auto;
+}
+
+.card--metric .card__head {
+  align-items: flex-start;
+}
+
+/* ── Тренд (V-15, D-26) ────────────────────────────────────────────── */
+
+/*
+  Направление несут стрелка и текст для screen reader, цвет — только третий
+  носитель: зелёный ↔ малиновый неразличимы при дейтеранопии (D-26)
+*/
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.trend__arrow {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.trend--up {
+  color: var(--color-positive);
+}
+
+.trend--down {
+  color: var(--color-negative);
+}
+
+.trend--flat {
+  color: var(--color-neutral);
+}
+
+/* ── Бейдж планового коридора (D-22) ───────────────────────────────── */
+
+/*
+  «В плане» — заливка, отклонения — обводка: состояния различимы формой, а не
+  только цветом. Плана под срез нет — бейджа нет вовсе (D-04)
+*/
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border: var(--divider-width) solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.badge--in {
+  background: var(--color-positive-fill);
+  color: var(--color-on-accent);
+}
+
+.badge--above {
+  border-color: var(--color-positive);
+  color: var(--color-positive);
+}
+
+.badge--below {
+  border-color: var(--color-negative);
+  color: var(--color-negative);
+}
+
+/* ── Кликабельная карточка (P0 №7, D-31) ───────────────────────────── */
+
+.metric__toggle {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+/* Реакция на всю карточку, а не только на её содержимое: кликом читается вся плитка */
+.card:has(.metric__toggle:hover) {
+  border-color: var(--color-border-strong);
+}
+
+.card:has(.metric__toggle[aria-pressed='true']) {
+  border-color: var(--color-text-tertiary);
+  background: var(--color-surface-sunken);
+}
+
+/*
+  Состояние фильтра названо словом: обводка и фон различимы в grayscale, но
+  сами по себе не сообщают, что карточка вообще управляет фильтром (D-26)
+*/
+.metric__filter {
+  align-self: flex-start;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.metric__toggle[aria-pressed='true'] .metric__filter {
+  border-color: var(--color-text-strong);
+  color: var(--color-text-strong);
+  font-weight: var(--weight-medium);
+}
