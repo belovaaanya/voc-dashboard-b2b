@@ -7,7 +7,7 @@
 */
 
 import { formatBuildTime, formatCount, formatDateRange } from './format.js';
-import { CHANNEL_LABEL_DIMENSION } from './dimensions.js';
+import { CHANNEL_DIMENSION } from './dimensions.js';
 import { SOURCE_FIXTURE } from './loader.js';
 
 function element(tag, className, text) {
@@ -23,7 +23,7 @@ function renderChannels(channels, state, label, onChange) {
   group.setAttribute('aria-label', 'Канал');
 
   for (const channel of channels) {
-    const tab = element('button', 'channels__tab', label(CHANNEL_LABEL_DIMENSION, channel));
+    const tab = element('button', 'channels__tab', label(CHANNEL_DIMENSION, channel));
     tab.type = 'button';
     tab.setAttribute('role', 'tab');
     tab.setAttribute('aria-selected', String(channel === state.channel));
@@ -46,7 +46,7 @@ function renderDivider() {
 function filterCaption(dimension, state, label) {
   const selected = state.filters?.[dimension.key] ?? [];
   if (!selected.length) return dimension.allCaption;
-  if (selected.length === 1) return label(dimension.labelDimension, selected[0]);
+  if (selected.length === 1) return label(dimension.key, selected[0]);
   return `${dimension.title}: ${formatCount(selected.length)}`;
 }
 

@@ -7,7 +7,7 @@
 */
 
 import { EMPTY, ERROR, LOADING, READY, createBlock } from './block.js';
-import { CHANNEL_LABEL_DIMENSION, availableDimensions, channelsOf } from './dimensions.js';
+import { CHANNEL_DIMENSION, availableDimensions, channelsOf } from './dimensions.js';
 import { renderHeader } from './header.js';
 import { createLabels } from './labels.js';
 import { hasRole, loadRatings, loadReference, loadSource } from './loader.js';
@@ -96,7 +96,7 @@ function main() {
       }
       const segments = [...volumeBySegment.entries()].sort((a, b) => b[1] - a[1]).map(([code]) => code);
       segments.slice(0, 3).forEach((segment, index) => {
-        blocks.get(`voc-segment-${index + 1}`).setTitle(`VOC ${label('сегмент', segment)}`);
+        blocks.get(`voc-segment-${index + 1}`).setTitle(`VOC ${label('segment', segment)}`);
       });
 
       const render = (state) => {
@@ -104,7 +104,7 @@ function main() {
         if (active !== state) syncState(active);
         const rowsInSlice = slice(rows, active, dimensions, reference);
         blocks.get('voc-channel').setTitle(
-          active.channel ? `VOC ${label(CHANNEL_LABEL_DIMENSION, active.channel)}` : 'VOC канала',
+          active.channel ? `VOC ${label(CHANNEL_DIMENSION, active.channel)}` : 'VOC канала',
         );
 
         renderHeader(hosts.header, {

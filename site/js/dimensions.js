@@ -24,41 +24,36 @@ function viaReference(row, reference, field) {
   return [...values];
 }
 
-/* Имя канала в листе `labels` — тоже человеческое слово, а не ключ (D-02) */
-export const CHANNEL_LABEL_DIMENSION = 'канал';
+/* Канал не входит в DIMENSIONS: он выше фильтров, но подпись берёт так же (D-02) */
+export const CHANNEL_DIMENSION = 'channel';
 
 export const DIMENSIONS = [
   {
     key: 'segment',
-    labelDimension: 'сегмент',
     title: 'Сегменты',
     allCaption: 'Все сегменты',
     values: (row) => [row.segment],
   },
   {
     key: 'trigger',
-    labelDimension: 'триггер',
     title: 'Триггеры',
     allCaption: 'Все триггеры',
     values: (row) => row.operations ?? [],
   },
   {
     key: 'cp',
-    labelDimension: 'КП',
     title: 'КП',
     allCaption: 'Все КП',
     values: (row, reference) => viaReference(row, reference, 'kp'),
   },
   {
     key: 'product',
-    labelDimension: 'продукт',
     title: 'Продукты',
     allCaption: 'Все продукты',
     values: (row, reference) => viaReference(row, reference, 'product'),
   },
   {
     key: 'domain',
-    labelDimension: 'область',
     title: 'Области',
     allCaption: 'Все области',
     values: (row) => [row.domain],
