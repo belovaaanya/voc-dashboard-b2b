@@ -9,6 +9,8 @@
 const VOC_DIGITS = 2;
 const DELTA_DIGITS = 2;
 const IMPACT_DIGITS = 3;
+const COUNT_DIGITS = 0;
+const SHARE_DIGITS = 1;
 
 export function roundVoc(value) {
   return round(value, VOC_DIGITS);
@@ -20,6 +22,15 @@ export function roundDelta(value) {
 
 export function roundImpact(value) {
   return round(value, IMPACT_DIGITS);
+}
+
+export function roundCount(value) {
+  return round(value, COUNT_DIGITS);
+}
+
+/** Доли — один знак (`D-40`), и дельта доли показывается с той же точностью. */
+export function roundShare(value) {
+  return round(value, SHARE_DIGITS);
 }
 
 /**

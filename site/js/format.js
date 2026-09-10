@@ -40,12 +40,28 @@ export function formatDelta(value) {
   return sign + formatNumber(value, 2);
 }
 
+export function formatDeltaCount(value) {
+  if (!Number.isFinite(value)) return '—';
+  return (value > 0 ? '+' : '') + formatNumber(value, 0);
+}
+
+export function formatDeltaShare(value) {
+  if (!Number.isFinite(value)) return '—';
+  return `${value > 0 ? '+' : ''}${formatNumber(value, 1)}${NBSP}п.${NBSP}п.`;
+}
+
 export function formatImpact(value) {
   return formatNumber(value, 3);
 }
 
 export function formatCount(value) {
   return formatNumber(value, 0);
+}
+
+/* Доли — один знак после запятой (D-40); пробел перед знаком процента неразрывный */
+export function formatShare(value) {
+  if (!Number.isFinite(value)) return '—';
+  return `${formatNumber(value, 1)}${NBSP}%`;
 }
 
 /*

@@ -32,6 +32,36 @@ export function markDistribution(ratings) {
   });
 }
 
+/**
+ * Изменение показателя к предыдущему периоду. Не определён любой из двух —
+ * `null`, а не `0`: «сравнивать не с чем» и «не изменилось» — разные ответы.
+ */
+export function deltaOf(current, previous) {
+  if (current === null || previous === null) return null;
+  if (!Number.isFinite(current) || !Number.isFinite(previous)) return null;
+  return current - previous;
+}
+
+export function vocDelta(ratings, previousRatings) {
+  return deltaOf(voc(ratings), voc(previousRatings));
+}
+
+/**
+ * Направление тренда выводится из знака дельты, а не задаётся отдельно
+ * (`V-15`).
+ *
+ * На вход идёт **уже округлённое до отображаемых знаков** число, и точность у
+ * каждого показателя своя: иначе `+0,04` п. п. показало бы стрелку роста рядом
+ * с подписью `+0,0` — то же противоречие, от которого защищает `D-22`. Пару
+ * «округление + формат» держит `DELTA_SHAPES` в `blocks/metric-card.js`, чтобы
+ * они не разъехались.
+ */
+export function trendOf(shownDelta) {
+  if (shownDelta === null || shownDelta === undefined || !Number.isFinite(shownDelta)) return null;
+  if (shownDelta > 0) return 'up';
+  return shownDelta < 0 ? 'down' : 'flat';
+}
+
 export function groupBy(ratings, select) {
   const groups = new Map();
 

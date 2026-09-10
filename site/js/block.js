@@ -6,6 +6,8 @@
   в grayscale (D-26).
 */
 
+import { element } from './dom.js';
+
 export const LOADING = 'loading';
 export const EMPTY = 'empty';
 export const ERROR = 'error';
@@ -22,13 +24,6 @@ const TEXTS = {
     detail: '',
   },
 };
-
-function element(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text) node.textContent = text;
-  return node;
-}
 
 function renderState(state, detail) {
   const wrap = element('div', `state state--${state}`);
@@ -66,8 +61,11 @@ export function createBlock({ title, note, modifier }) {
     setTitle(text) {
       heading.textContent = text;
     },
-    setNote(text) {
-      noteNode.textContent = text ?? '';
+    /* Принимает и узел: бейдж плана стоит на строке заголовка (design-spec §3.1) */
+    setNote(content) {
+      if (content === null || content === undefined) noteNode.replaceChildren();
+      else if (content instanceof Node) noteNode.replaceChildren(content);
+      else noteNode.textContent = content;
     },
     setState(state, detail) {
       body.replaceChildren(
