@@ -19,8 +19,8 @@
 - [x] Зафиксировать источники в Figma → [figma-sources.md](docs/figma-sources.md)
 - [x] Спроектировать модель данных → [data-model.md](docs/data-model.md)
 - [x] Инструкции для агентов → [CLAUDE.md](CLAUDE.md)
-- [ ] Создать private-репозиторий и запушить
-- [ ] Включить GitHub Pages и убедиться, что деплой проходит
+- [x] Создать private-репозиторий и запушить — [belovaaanya/voc-dashboard-b2b](https://github.com/belovaaanya/voc-dashboard-b2b)
+- [ ] Включить GitHub Pages и убедиться, что деплой проходит — требует решения по плану аккаунта (Pages на private доступен только на Pro/Team/Enterprise)
 
 ## Этап 1 — данные
 
