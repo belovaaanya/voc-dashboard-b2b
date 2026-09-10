@@ -25,6 +25,15 @@ const sourceOf = (module) =>
 
 const FORMATTING = /toLocaleString|Intl\./;
 const METHODOLOGY = /markEffect|mixEffect/;
+const ANY_IMPORT = /import\s(?:[^;]*?from\s*)?'([^']+)'/g;
+const ALLOWED_IMPORTS = CALC_MODULES.map((module) => `./${module}`);
+
+/** Любой specifier, которого нет в списке модулей слайса, — чужая зависимость. */
+function foreignImports(source) {
+  return [...source.matchAll(ANY_IMPORT)]
+    .map(([, specifier]) => specifier)
+    .filter((specifier) => !ALLOWED_IMPORTS.includes(specifier));
+}
 
 test('AC-22 calc modules SHOULD leave string formatting to D-20', () => {
   for (const module of CALC_MODULES) {
@@ -59,26 +68,40 @@ test('AC-15 the impact methodology SHOULD live in impact.js only', () => {
 });
 
 test('AC-20 sufficiency SHOULD mark its default threshold as a placeholder awaiting analytics', () => {
-  const source = sourceOf('sufficiency.js');
-  const marker = /ЗАГЛУШКА[^*]*`D-25`|`D-25`[^*]*ЗАГЛУШКА/i;
+  const marked = (source) => /заглушка/i.test(source) && /D-25/.test(source);
 
-  assert.equal(marker.test(source), true, 'порог по умолчанию — заглушка, а не решение');
   assert.equal(
-    marker.test('export const DEFAULT_PRECISION_THRESHOLD = 0.1;'),
+    marked(sourceOf('sufficiency.js')),
+    true,
+    'порог по умолчанию — заглушка, а не решение',
+  );
+  assert.equal(
+    marked('export const DEFAULT_PRECISION_THRESHOLD = 0.1;'),
     false,
     'positive control: матчер обязан не находить пометку там, где её нет',
   );
 });
 
 test('calc modules SHOULD depend only on each other', () => {
-  const imports = /from '\.\/([^']+)'/g;
-
   for (const module of CALC_MODULES) {
-    for (const [, dependency] of sourceOf(module).matchAll(imports)) {
-      assert.ok(
-        CALC_MODULES.includes(dependency),
-        `${module} импортирует ${dependency} — файл другой сессии`,
-      );
-    }
+    assert.deepEqual(
+      foreignImports(sourceOf(module)),
+      [],
+      `${module}: зависимостей и bundler в этом стеке нет`,
+    );
   }
+
+  assert.deepEqual(
+    foreignImports(
+      [
+        "import { readFileSync } from 'node:fs';",
+        "import d3 from 'd3-array';",
+        "import { x } from '../vendor/lodash.js';",
+        "import './side-effect.js';",
+        "import { voc } from './metrics.js';",
+      ].join('\n'),
+    ),
+    ['node:fs', 'd3-array', '../vendor/lodash.js', './side-effect.js'],
+    'positive control: матчер обязан видеть и внешний пакет, и путь наружу',
+  );
 });

@@ -1,23 +1,11 @@
 /**
- * Неаддитивные разрезы: `operations` → группы (`D-08`, `D-09`, `D-11`, `D-12`).
+ * Неаддитивные разрезы: проекция `оценка → ключи` (`D-08`, `D-09`, `D-11`, `D-12`).
+ * Какие четыре числа несёт группа и почему их именно четыре — `docs/calc-core.md` §4.
  *
- * Разрез задаётся проекцией `оценка → массив ключей`, а не списком измерений:
- * триггеры, продукты, `КП`, `problem` и `domain` считаются одним кодом, а
- * справочник триггер → продукт остаётся снаружи (`data-model` §3.2).
- *
- * Оценка с `N` ключами попадает в каждый с весом `1/N` (`D-08`), поэтому
- * `weightedCount` по группам суммируется в число оценок среза, а
- * `weightedVoc` сводится к VOC среза. `mentions` — вторая, честно названная
- * метрика с целым отнесением (`D-09`): она больше числа оценок и в сумму не
- * сходится, это свойство разреза, а не ошибка.
- *
- * Внутри группы оценка учитывается один раз: несколько триггеров одной оценки
- * могут сойтись в один продукт (`data-model` §5.2), и тогда дедупликация по
- * `voc_ccode` — единственное, что удерживает `mentions` и `voc` группы от
- * двойного счёта.
+ * Справочник триггер → продукт остаётся снаружи: ядро знает только проекцию.
  */
 
-import { LOW_MARK_MAX } from './metrics.js';
+import { compareKeys, LOW_MARK_MAX } from './metrics.js';
 
 /** Пустая разметка — не потерянная оценка, а явная группа (`D-11`). */
 export const UNLABELLED = 'Без разметки';
@@ -27,6 +15,11 @@ export function breakdown(ratings, project) {
   const total = ratings.length;
 
   for (const rating of ratings) {
+    // Без идентификатора дедупликация внутри группы схлопнула бы разные оценки в одну.
+    if (isBlank(rating.voc_ccode)) {
+      throw new Error(`Оценка без voc_ccode: ${JSON.stringify(rating)}`);
+    }
+
     const keys = projectKeys(rating, project);
     const weight = 1 / keys.length;
 
@@ -84,6 +77,5 @@ function byWeightThenKey(left, right) {
   if (left.weightedCount !== right.weightedCount) {
     return right.weightedCount - left.weightedCount;
   }
-  if (left.key < right.key) return -1;
-  return left.key > right.key ? 1 : 0;
+  return compareKeys(left.key, right.key);
 }

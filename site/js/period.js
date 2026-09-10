@@ -26,12 +26,15 @@ const CALENDAR_BOUNDS = {
   'years-5': (year) => [[year - 4, 0, 1], [year, 12, 0]],
 };
 
-/** На сколько единиц календаря сдвигается preset назад, чтобы получить предыдущий блок. */
+/**
+ * Сдвиг назад по `from`, а не по длине блока: `CALENDAR_BOUNDS` разворачивает
+ * год в блок сам, поэтому для `years-5` шаг — год, а не пятилетие.
+ */
 const CALENDAR_STEP = {
   month: { months: 1 },
   'half-year': { months: 6 },
   'calendar-year': { months: 12 },
-  'years-5': { months: 60 },
+  'years-5': { months: 12 },
 };
 
 export function resolvePreset(preset, today) {
@@ -61,22 +64,37 @@ export function resolvePreset(preset, today) {
 }
 
 export function customPeriod(from, to) {
-  return { preset: 'custom', from: normalize(from), to: normalize(to), complete: true };
+  const start = normalize(from);
+  const end = normalize(to);
+  if (start > end) throw new Error(`Диапазон вывернут: ${from} … ${to}`);
+
+  return { preset: 'custom', from: start, to: end, complete: true };
 }
 
+/**
+ * Возвращает период той же формы, что `resolvePreset`: результат сам является
+ * периодом, поэтому «май → апрель → март» — это повторный вызов, а не потеря
+ * календарной семантики.
+ */
 export function previousPeriod(period) {
   const step = CALENDAR_STEP[period.preset];
   if (!step) return precedingRange(period);
 
   const previous = shiftCalendarBlock(period.preset, period.from, step.months);
-  if (period.complete) return previous;
+  if (period.complete) {
+    return { preset: period.preset, ...previous, complete: true };
+  }
 
   // D-24: неполный период сравнивается с началом предыдущего, а не с ним целиком.
   const alignedTo = shiftDays(parse(previous.from), dayCount(period) - 1);
   const end = parse(previous.to);
+  const coversWholeBlock = alignedTo.getTime() >= end.getTime();
+
   return {
+    preset: period.preset,
     from: previous.from,
-    to: iso(alignedTo.getTime() < end.getTime() ? alignedTo : end),
+    to: iso(coversWholeBlock ? end : alignedTo),
+    complete: coversWholeBlock,
   };
 }
 
@@ -86,7 +104,12 @@ export function dayCount({ from, to }) {
 
 function precedingRange(period) {
   const to = shiftDays(parse(period.from), -1);
-  return { from: iso(shiftDays(to, 1 - dayCount(period))), to: iso(to) };
+  return {
+    preset: period.preset,
+    from: iso(shiftDays(to, 1 - dayCount(period))),
+    to: iso(to),
+    complete: true,
+  };
 }
 
 function shiftCalendarBlock(preset, from, months) {
@@ -106,7 +129,10 @@ function shiftCalendarBlock(preset, from, months) {
 
 function parse(value) {
   const date = new Date(`${value}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) throw new Error(`Не дата: ${value}`);
+  // `Date` докручивает 30 февраля до марта, поэтому мало проверить разбор.
+  if (Number.isNaN(date.getTime()) || iso(date) !== value) {
+    throw new Error(`Не дата: ${value}`);
+  }
   return date;
 }
 

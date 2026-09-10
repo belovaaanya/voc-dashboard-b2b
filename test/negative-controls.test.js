@@ -19,7 +19,9 @@ import { previousPeriod, resolvePreset } from '../site/js/period.js';
 import { rating, ratingsWithMarks } from './helpers/ratings.js';
 import {
   assertAveragesRatings,
+  assertTimeSymmetric,
   assertContributionsSumToDelta,
+  assertEffectsSumToContribution,
   assertDisplayDigits,
   assertMentionsAreUniqueRatings,
   assertNeutralElementHasNoImpact,
@@ -105,6 +107,20 @@ function impactWithoutCenter(previous, current, project) {
 
 function center({ previousVoc, currentVoc }) {
   return (previousVoc + currentVoc) / 2;
+}
+
+/** `D-10` наоборот: эффект структуры отсчитывается от VOC прошлого периода, а не от середины. */
+function impactAgainstPreviousVoc(previous, current, project) {
+  const decomposition = decomposeVocChange(previous, current, project);
+  const shift = center(decomposition) - decomposition.previousVoc;
+
+  return {
+    ...decomposition,
+    contributions: decomposition.contributions.map((item) => {
+      const mixEffect = item.mixEffect + (item.currentShare - item.previousShare) * shift;
+      return { ...item, mixEffect, impact: item.markEffect + mixEffect };
+    }),
+  };
 }
 
 /** `D-25` наоборот: без защиты от выборки из одной оценки. */
@@ -294,4 +310,47 @@ test('positive control: ratingCount не подменяется числом у�
 
   assert.equal(ratingCount(slice), 2);
   assert.equal(mentions, 3);
+});
+
+test('positive control D-10: точка отсчёта закреплена числами, посчитанными руками', () => {
+  const previous = [on(5, ['Выписка']), on(3, ['Платежи'])];
+  const current = [on(5, ['Выписка']), on(5, ['Выписка']), on(1, ['Платежи'])];
+
+  const { delta, contributions } = decomposeVocChange(previous, current, byOperations);
+  const impactOf = (key) => contributions.find((item) => item.key === key).impact;
+
+  assert.ok(Math.abs(delta + 1 / 3) < 1e-12, `ΔVOC ${delta}`);
+  assert.ok(Math.abs(impactOf('Выписка') - 7 / 36) < 1e-12, `Выписка ${impactOf('Выписка')}`);
+  assert.ok(Math.abs(impactOf('Платежи') + 19 / 36) < 1e-12, `Платежи ${impactOf('Платежи')}`);
+
+  const broken = impactAgainstPreviousVoc(previous, current, byOperations);
+  const brokenStatements = broken.contributions.find(({ key }) => key === 'Выписка').impact;
+
+  assertContributionsSumToDelta(broken);
+  assert.ok(
+    Math.abs(brokenStatements - 1 / 6) < 1e-12,
+    'односторонний отсчёт даёт 1/6 вместо 7/36 и всё равно сходится в сумме',
+  );
+});
+
+test('positive control D-10: инвариант антисимметрии ловит одностороннюю точку отсчёта', () => {
+  const previous = [on(5, ['Выписка']), on(3, ['Платежи'])];
+  const current = [on(5, ['Выписка']), on(5, ['Выписка']), on(1, ['Платежи'])];
+
+  assertTimeSymmetric(decomposeVocChange, previous, current, byOperations);
+  assert.throws(
+    () => assertTimeSymmetric(impactAgainstPreviousVoc, previous, current, byOperations),
+    /при обратном сравнении/,
+  );
+});
+
+test('positive control D-10: инвариант слагаемых ловит вклад, не равный своим эффектам', () => {
+  const previous = [on(5, ['Выписка']), on(4, ['Платежи']), on(2, ['Лояльность'])];
+  const current = [on(4, ['Выписка']), on(1, ['Лояльность']), on(1, ['Лояльность'])];
+
+  assertEffectsSumToContribution(decomposeVocChange(previous, current, byOperations));
+  assert.throws(
+    () => assertEffectsSumToContribution(impactWithMarkEffectOnly(previous, current, byOperations)),
+    /не даёт вклад/,
+  );
 });
