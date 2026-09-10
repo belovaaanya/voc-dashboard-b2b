@@ -260,3 +260,316 @@
   box-shadow: inset 0 0 0 var(--divider-width) var(--color-text-tertiary);
   background: var(--color-surface-sunken);
 }
+
+/* ── Динамика VOC (P0 №3–4, D-04, D-22, V-05, V-06, V-11, V-12) ─── */
+
+.card--dynamics {
+  min-height: var(--chart-card-height);
+}
+
+.card--dynamics .card__head {
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.card--dynamics .card__title {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+}
+
+.card--dynamics .card__note {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.card--dynamics .card__body {
+  flex: 1 1 auto;
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.chart-period {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-scale {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+}
+
+.chart-scale__tab,
+.chart-expand,
+.chart-toggle {
+  border: 0;
+  color: var(--color-text-tertiary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.chart-scale__tab {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.chart-scale__tab[aria-selected='true'] {
+  background: var(--color-border-strong);
+  color: var(--color-text-strong);
+}
+
+.chart-scale__tab:hover,
+.chart-expand:hover,
+.chart-toggle:hover {
+  color: var(--color-text-strong);
+}
+
+.chart-expand {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: var(--space-6);
+  height: var(--space-6);
+  padding: 0;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: transparent;
+  font-size: var(--text-lg);
+}
+
+.chart {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  min-height: var(--space-5);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.chart-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.chart-legend__key {
+  display: inline-block;
+  width: var(--space-4);
+  height: var(--divider-width);
+  background: var(--color-neutral);
+}
+
+.chart-legend__key--voc {
+  height: calc(var(--divider-width) * 2);
+  background: var(--color-positive);
+}
+
+.chart-legend__key--plan {
+  height: var(--space-2);
+  border-radius: var(--space-1);
+  background: var(--color-border-strong);
+}
+
+.chart-legend__key--previous {
+  height: 0;
+  border-block-start: var(--divider-width) dashed var(--color-neutral);
+  background: transparent;
+}
+
+.chart-toggle {
+  margin-inline-end: auto;
+  padding: var(--space-1) var(--space-2);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.chart-toggle[aria-pressed='true'] {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+
+.chart-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: var(--chart-plot-height);
+  overflow: hidden;
+}
+
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: var(--chart-plot-height);
+  overflow: visible;
+}
+
+.chart-grid line {
+  stroke: var(--color-border);
+  stroke-width: var(--divider-width);
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-axis-label {
+  fill: var(--color-text-tertiary);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+}
+
+.chart-axis-label--y {
+  text-anchor: start;
+}
+
+.chart-plot {
+  overflow: hidden;
+}
+
+.chart-plan-band {
+  fill: var(--color-border-strong);
+  opacity: 0.52;
+}
+
+.chart-bars {
+  pointer-events: none;
+}
+
+.chart-bar {
+  fill: var(--color-text-tertiary);
+  opacity: 0.12;
+}
+
+.chart-area {
+  stroke: none;
+  opacity: 0.12;
+}
+
+.chart-area--above,
+.chart-area--default {
+  fill: var(--color-positive-fill);
+}
+
+.chart-area--below {
+  fill: var(--color-negative);
+}
+
+.chart-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: calc(var(--divider-width) * 2);
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-line--above,
+.chart-line--default {
+  stroke: var(--color-positive);
+}
+
+.chart-line--in-plan,
+.chart-line--previous {
+  stroke: var(--color-neutral);
+}
+
+.chart-line--below {
+  stroke: var(--color-negative);
+}
+
+.chart-line--previous {
+  opacity: 0.72;
+  stroke-dasharray: var(--space-1) var(--space-1);
+  stroke-width: var(--divider-width);
+}
+
+.chart-point {
+  fill: var(--color-surface);
+  stroke: var(--color-text-secondary);
+  stroke-width: calc(var(--divider-width) * 2);
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+
+.chart-point--above {
+  stroke: var(--color-positive);
+}
+
+.chart-point--below {
+  stroke: var(--color-negative);
+}
+
+.chart-point-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-chart);
+  pointer-events: none;
+}
+
+.chart-point-label--above,
+.chart-point-label--default {
+  fill: var(--color-positive);
+}
+
+.chart-point-label--in-plan {
+  fill: var(--color-text-secondary);
+}
+
+.chart-point-label--below {
+  fill: var(--color-negative);
+}
+
+.chart-point:hover,
+.chart-point:focus {
+  fill: var(--color-text-strong);
+  stroke: var(--color-text-strong);
+  outline: none;
+}
+
+.chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  inset-inline-start: min(calc(var(--tooltip-x) + var(--space-2)), calc(100% - var(--chart-tooltip-max)));
+  inset-block-start: max(var(--space-1), calc(var(--tooltip-y) - var(--space-8)));
+  max-width: var(--chart-tooltip-max);
+  padding: var(--space-2) var(--space-3);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.card--dynamics.is-expanded {
+  position: fixed;
+  z-index: 20;
+  inset: var(--space-6);
+  min-height: 0;
+  background: var(--color-bg);
+}

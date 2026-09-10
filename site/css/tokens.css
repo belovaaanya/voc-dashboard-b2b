@@ -56,6 +56,7 @@
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --text-xs: 12px;
+  --text-chart: 10px;
   --text-sm: 13px;
   --text-md: 14px;
   --text-lg: 16px;
@@ -75,6 +76,11 @@
   --radius-card: 20px;
   --radius-control: 10px;
   --radius-pill: 999px;
+
+  /* График VOC — замеры Figma node 3204:2865 */
+  --chart-card-height: 326px;
+  --chart-plot-height: 222px;
+  --chart-tooltip-max: 220px;
 
   /* Прочее */
   --focus-ring: 2px;
