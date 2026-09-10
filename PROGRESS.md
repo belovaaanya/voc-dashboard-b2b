@@ -20,11 +20,12 @@
 - [x] Спроектировать модель данных → [data-model.md](docs/data-model.md)
 - [x] Инструкции для агентов → [CLAUDE.md](CLAUDE.md)
 - [x] Создать private-репозиторий и запушить — [belovaaanya/voc-dashboard-b2b](https://github.com/belovaaanya/voc-dashboard-b2b)
-- [ ] Включить GitHub Pages и убедиться, что деплой проходит — требует решения по плану аккаунта (Pages на private доступен только на Pro/Team/Enterprise)
+- [x] Включить GitHub Pages — [belovaaanya.github.io/voc-dashboard-b2b](https://belovaaanya.github.io/voc-dashboard-b2b/); репозиторий переведён в public, потому что на бесплатном плане Pages для private недоступен
+- [ ] Убедиться, что deploy проходит зелёным
 
 ## Этап 1 — данные
 
-- [ ] Выбрать стек и наличие build-шага (открытый вопрос №5)
+- [x] Выбрать стек — без framework и bundler, ES-модули + CSS custom properties ([README](README.md#стек))
 - [ ] Генератор тестовых данных → `data/voc-dashboard.xlsx`
 - [ ] Скрипт проверки непротиворечивости данных
 - [ ] Конвертер `xlsx` → `site/data/*.json`
@@ -75,6 +76,5 @@
 - [ ] №2 Критерий достаточности выборки и пороги
 - [ ] №3 Методика расчёта вклада антидрайвера (`impact_voc`)
 - [ ] №4 Нужен ли адаптив, кроме desktop `1600`
-- [ ] №5 Стек и build-шаг
-- [ ] №6 Состав метрик после отказа от «конверсии в опрос»
+- [ ] №5 Состав метрик после отказа от «конверсии в опрос»
 - [ ] V-16 `Лояльность` — драйвер роста или антидрайвер

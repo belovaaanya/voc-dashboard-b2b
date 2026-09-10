@@ -59,17 +59,15 @@ data/voc-dashboard.xlsx  ──tools/xlsx_to_json.py──▶  site/data/*.json
 
 ## Стек
 
-**Не зафиксирован** — открытый вопрос №5.
-
-Рекомендация: **без framework и без bundler** — ES-модули, CSS custom
-properties, данные через `fetch` JSON. Обоснование:
+**Без framework и без bundler** — ES-модули, CSS custom properties, данные
+через `fetch` JSON. Обоснование:
 
 - дашборд — один экран с сильно кастомной графикой; framework здесь почти
   ничего не переиспользует;
 - график (плановый коридор, линия, меняющая цвет при переходе через коридор,
   подписи на точках) проще нарисовать своим SVG, чем перекрашивать chart-библиотеку,
   поэтому chart-зависимость тоже не нужна;
-- Pages тогда деплоит `site/` как есть, единственный tooling — конвертер данных.
+- Pages деплоит `site/` как есть, единственный tooling — конвертер данных.
 
 Если понадобится TypeScript или сборка токенов, добавляется Vite — deploy
 меняется на одну сборочную step.
@@ -78,12 +76,11 @@ properties, данные через `fetch` JSON. Обоснование:
 
 ## Deploy
 
-Публикуется содержимое `site/` при push в `main` —
-[.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
+Опубликовано: **https://belovaaanya.github.io/voc-dashboard-b2b/**
 
-Чтобы workflow заработал, в настройках репозитория нужно включить
-**Settings → Pages → Source: GitHub Actions**.
+Содержимое `site/` публикуется при push в `main` —
+[.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml),
+source в настройках Pages — GitHub Actions.
 
-Для **приватного** репозитория GitHub Pages доступен только на платных планах
-(Pro / Team / Enterprise). На бесплатном плане варианта два: сделать репозиторий
-публичным или поднять план.
+Репозиторий публичный: на бесплатном плане Pages для private-репозитория
+недоступен, а публикация страницы была нужна.
