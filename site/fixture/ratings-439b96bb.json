@@ -1,0 +1,320 @@
+[
+  {
+    "voc_ccode": "F-001",
+    "appeal_date": "2026-04-03",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 5,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-002",
+    "appeal_date": "2026-04-07",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 4,
+    "domain": "Платежи",
+    "problem_type": "Скорость",
+    "problem": "Долгое подтверждение",
+    "operations": [
+      "Отправка платежа",
+      "Подтверждение платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-003",
+    "appeal_date": "2026-04-11",
+    "channel": "АБМ",
+    "segment": "СБ",
+    "mark": 2,
+    "domain": "Выписка",
+    "problem_type": "Ошибка",
+    "problem": "Экспорт не открывается",
+    "operations": [
+      "Экспорт выписки из раздела"
+    ]
+  },
+  {
+    "voc_ccode": "F-004",
+    "appeal_date": "2026-04-15",
+    "channel": "АБМ",
+    "segment": "СБ",
+    "mark": 5,
+    "domain": "Лояльность",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Оформление кэшбэка"
+    ]
+  },
+  {
+    "voc_ccode": "F-005",
+    "appeal_date": "2026-04-19",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 3,
+    "domain": null,
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Реестр зарплат"
+    ]
+  },
+  {
+    "voc_ccode": "F-006",
+    "appeal_date": "2026-04-23",
+    "channel": "АБМ",
+    "segment": "КИБ",
+    "mark": 5,
+    "domain": "Реестры",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Реестр зарплат",
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-007",
+    "appeal_date": "2026-04-27",
+    "channel": "НИБ",
+    "segment": "ММБ",
+    "mark": 4,
+    "domain": "Платежи",
+    "problem_type": "Скорость",
+    "problem": "Долгая загрузка",
+    "operations": [
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-008",
+    "appeal_date": "2026-04-29",
+    "channel": "НИБ",
+    "segment": "СБ",
+    "mark": 1,
+    "domain": "АЗОН",
+    "problem_type": "Массовая авария",
+    "problem": "Недоступность раздела",
+    "operations": [
+      "Открытие АЗОН"
+    ]
+  },
+  {
+    "voc_ccode": "F-009",
+    "appeal_date": "2026-05-04",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 5,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-010",
+    "appeal_date": "2026-05-05",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 5,
+    "domain": "Лояльность",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Оформление кэшбэка"
+    ]
+  },
+  {
+    "voc_ccode": "F-011",
+    "appeal_date": "2026-05-07",
+    "channel": "АБМ",
+    "segment": "СБ",
+    "mark": 3,
+    "domain": "Выписка",
+    "problem_type": "Ошибка",
+    "problem": "Пустой файл",
+    "operations": [
+      "Экспорт выписки из раздела",
+      "Печать выписки"
+    ]
+  },
+  {
+    "voc_ccode": "F-012",
+    "appeal_date": "2026-05-08",
+    "channel": "АБМ",
+    "segment": "СБ",
+    "mark": 4,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Подтверждение платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-013",
+    "appeal_date": "2026-05-11",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 2,
+    "domain": "Реестры",
+    "problem_type": "Ошибка",
+    "problem": "Реестр не принят",
+    "operations": [
+      "Реестр зарплат"
+    ]
+  },
+  {
+    "voc_ccode": "F-014",
+    "appeal_date": "2026-05-12",
+    "channel": "АБМ",
+    "segment": "КИБ",
+    "mark": 4,
+    "domain": null,
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Открытие АЗОН"
+    ]
+  },
+  {
+    "voc_ccode": "F-015",
+    "appeal_date": "2026-05-13",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 5,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Отправка платежа",
+      "Подтверждение платежа",
+      "Реестр зарплат"
+    ]
+  },
+  {
+    "voc_ccode": "F-016",
+    "appeal_date": "2026-05-14",
+    "channel": "АБМ",
+    "segment": "СБ",
+    "mark": 5,
+    "domain": "Лояльность",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Оформление кэшбэка"
+    ]
+  },
+  {
+    "voc_ccode": "F-017",
+    "appeal_date": "2026-05-15",
+    "channel": "НИБ",
+    "segment": "ММБ",
+    "mark": 3,
+    "domain": "Выписка",
+    "problem_type": "Скорость",
+    "problem": "Долгое формирование",
+    "operations": [
+      "Экспорт выписки из раздела"
+    ]
+  },
+  {
+    "voc_ccode": "F-018",
+    "appeal_date": "2026-05-16",
+    "channel": "НИБ",
+    "segment": "ММБ",
+    "mark": 5,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-019",
+    "appeal_date": "2026-05-18",
+    "channel": "НИБ",
+    "segment": "СБ",
+    "mark": 2,
+    "domain": "АЗОН",
+    "problem_type": "Ошибка",
+    "problem": "Не открывается справка",
+    "operations": [
+      "Открытие АЗОН",
+      "Печать выписки"
+    ]
+  },
+  {
+    "voc_ccode": "F-020",
+    "appeal_date": "2026-05-19",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 4,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-021",
+    "appeal_date": "2026-05-20",
+    "channel": "АБМ",
+    "segment": "СБ",
+    "mark": 5,
+    "domain": "Реестры",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Реестр зарплат"
+    ]
+  },
+  {
+    "voc_ccode": "F-022",
+    "appeal_date": "2026-05-21",
+    "channel": "АБМ",
+    "segment": "КИБ",
+    "mark": 3,
+    "domain": "Выписка",
+    "problem_type": "Ошибка",
+    "problem": "Пустой файл",
+    "operations": [
+      "Экспорт выписки из раздела"
+    ]
+  },
+  {
+    "voc_ccode": "F-023",
+    "appeal_date": "2026-05-22",
+    "channel": "АБМ",
+    "segment": "ММБ",
+    "mark": 5,
+    "domain": "Платежи",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Отправка платежа"
+    ]
+  },
+  {
+    "voc_ccode": "F-024",
+    "appeal_date": "2026-05-22",
+    "channel": "НИБ",
+    "segment": "СБ",
+    "mark": 4,
+    "domain": "Лояльность",
+    "problem_type": null,
+    "problem": null,
+    "operations": [
+      "Оформление кэшбэка"
+    ]
+  }
+]

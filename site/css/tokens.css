@@ -1,0 +1,81 @@
+/*
+  Токены дашборда. Единственный файл, где цвет задаётся литералом:
+  остальные стили обязаны обращаться через var().
+
+  Палитра — docs/design-spec.md §5, шкала отступов — V-02, гарнитура — D-30,
+  контраст — D-28 (проверяется страницей site/dev/contrast.html).
+*/
+
+:root {
+  /* Поверхности */
+  --color-bg: #0B0B0D;
+  --color-surface: #111214;
+  --color-surface-sunken: #0D0D0F;
+  --color-border: #232427;
+  --color-border-strong: #34353A;
+
+  /* Текст */
+  --color-text-strong: #FFFFFF;
+  --color-text: #E1E1E1;
+  --color-text-secondary: #C3C3C3;
+  --color-text-tertiary: #A4A4A5;
+
+  /* Акценты */
+  --color-positive: #2DDA93;
+  --color-positive-fill: #29C083;
+  --color-negative: #FF376B;
+  --color-neutral: #A4A4A5;
+
+  /* Текст на акцентной заливке: белое на #FF376B даёт 3.49:1 и AA не проходит */
+  --color-on-accent: #0B0B0D;
+
+  /* Расходящаяся шкала heatmap с промежуточным янтарным тоном (D-27) */
+  --color-scale-good: #164C37;
+  --color-scale-mid: #4A3A12;
+  --color-scale-bad: #2F0A19;
+
+  /* Шкала отступов: только кратное 4 (V-02) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Один зазор между равноправными элементами — карточками и колонками (V-02) */
+  --gap-card: var(--space-4);
+
+  /* Сетка. Рейл одной ширины во всех строках (V-01) */
+  --content-max: 1400px;
+  --content-min: 1200px;
+  --rail-width: 344px;
+
+  /* Типографика. Системный стек, без веб-шрифта (D-30) */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-metric-sm: 48px;
+  --text-metric-lg: 96px;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+
+  --weight-light: 300;
+  --weight-normal: 400;
+  --weight-medium: 500;
+
+  /* Радиусы */
+  --radius-card: 20px;
+  --radius-control: 10px;
+  --radius-pill: 999px;
+
+  /* Прочее */
+  --focus-ring: 2px;
+  --divider-width: 1px;
+}
