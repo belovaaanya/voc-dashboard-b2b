@@ -32,8 +32,10 @@ jobs:
       - run: pip install -r tools/requirements.txt
 
       # Непротиворечивость выгрузки проверяется до публикации: расхождение с
-      # ориентирами карточек дешевле поймать здесь, чем в браузере.
-      - run: python tools/check_data.py
+      # ориентирами карточек дешевле поймать здесь, чем в браузере. Флаг
+      # --sample включает обещания data-model §9 — в data/ по правилу §8
+      # лежит только синтетика.
+      - run: python tools/check_data.py --sample
 
       - run: python tools/xlsx_to_json.py
 

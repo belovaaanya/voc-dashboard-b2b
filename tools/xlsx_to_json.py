@@ -18,11 +18,12 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from voc_schema import Extract, SchemaError, load
+from voc_schema import MARKS, Extract, SchemaError, load
 
 DEFAULT_SOURCE = Path("data/voc-dashboard.xlsx")
 DEFAULT_OUTPUT = Path("site/data")
@@ -31,12 +32,54 @@ DEFAULT_OUTPUT = Path("site/data")
 # предагрегация в источнике.
 DEFAULT_MAX_GZIP_MB = 5.0
 
+# Файл ищется по role, не по позиции (D-38).
+ROLES = ["ratings", "verbatim", "reference"]
+
 UNMAPPED_LABEL = "Без сопоставления"
 
-# OSLK_EXPERTISE_NAME переносим, но природа поля неизвестна: показать его как
-# цитату клиента — риск вывести внутренний экспертный текст от лица клиента
-# (D-05). Флаг едет вместе с данными, чтобы UI не пришлось помнить это правило.
+# Канонические id измерений (D-39): в xlsx аналитик пишет по-русски, а
+# соответствие живёт здесь, а не в браузере.
+DIMENSION_IDS = {
+    "канал": "channel",
+    "сегмент": "segment",
+    "область": "domain",
+    "тип проблемы": "problem_type",
+    "проблема": "problem",
+    "триггер": "operation",
+    "КП": "kp",
+    "продукт": "product",
+}
+
+# Флаг едет вместе с данными, чтобы правило D-05 не пришлось помнить в UI.
 NOT_FOR_DISPLAY = ["oslk_expertise_name"]
+
+
+class ConversionError(Exception):
+    """Выгрузку нельзя сконвертировать без потери или искажения данных."""
+
+
+def reject_unrepresentable(extract: Extract) -> None:
+    """Строка, которую нельзя записать в JSON без искажения, роняет сборку.
+
+    Полный контракт выгрузки проверяет `check_data.py`; здесь — минимум, без
+    которого конвертер молча отдал бы `"mark": "5"` вместо числа.
+    """
+    problems = []
+    for rating in extract.ratings:
+        where = f"{rating.sheet}:{rating.row}"
+        if type(rating.mark) is not int or rating.mark not in MARKS:
+            problems.append(f"{where}: MARK1_VALUE = {rating.mark!r}")
+        if rating.appeal_date is None:
+            problems.append(f"{where}: пустой или нечитаемый APPEAL_DATE")
+        if not rating.voc_ccode:
+            problems.append(f"{where}: пустой VOC_CCODE")
+    if problems:
+        raise ConversionError(
+            f"строк, которые нельзя сконвертировать: {len(problems)}\n"
+            + "\n".join(f"  {problem}" for problem in problems[:10])
+            + ("\n  …" if len(problems) > 10 else "")
+            + "\nполный разбор — python3 tools/check_data.py"
+        )
 
 
 def build_ratings(extract: Extract) -> list[dict]:
@@ -82,9 +125,18 @@ def build_reference(extract: Extract, unmapped: set[tuple[str, str]]) -> dict:
         }
 
     labels: dict[str, dict[str, str]] = {}
+    unknown = sorted({row.dimension for row in extract.labels if row.dimension not in DIMENSION_IDS})
+    if unknown:
+        raise ConversionError(
+            "неизвестные измерения на листе labels: "
+            + ", ".join(f"«{dimension}»" for dimension in unknown)
+            + ". Известные: "
+            + ", ".join(f"«{dimension}»" for dimension in DIMENSION_IDS)
+            + " (D-39). Опечатка молча лишила бы интерфейс подписей."
+        )
     for row in extract.labels:
         if row.label:
-            labels.setdefault(row.dimension, {})[row.code] = row.label
+            labels.setdefault(DIMENSION_IDS[row.dimension], {})[row.code] = row.label
 
     plan = [
         {
@@ -110,6 +162,18 @@ def find_unmapped(extract: Extract) -> set[tuple[str, str]]:
     return unmapped
 
 
+def default_periods(last: date) -> dict[str, str]:
+    """Период по умолчанию — календарный месяц последней оценки, и предыдущий
+    аналогичный (`D-41`).
+
+    Считается здесь, а не в браузере: иначе период по умолчанию выводился бы
+    из часов пользователя и на фиксированных датах сэмпла давал бы пустой
+    дашборд.
+    """
+    previous = date(last.year, last.month, 1) - timedelta(days=1)
+    return {"current": f"{last:%Y-%m}", "previous": f"{previous:%Y-%m}"}
+
+
 def dump(payload: object) -> bytes:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
@@ -129,12 +193,15 @@ def write_hashed(directory: Path, role: str, payload: object) -> dict:
     }
 
 
-def clean_stale(directory: Path, keep: set[str]) -> list[str]:
+def clean_stale(directory: Path, roles: list[str], keep: set[str]) -> list[str]:
+    """Удаляет прежние версии своих файлов, и только их: безусловный обход по
+    `*.json` вынес бы из каталога чужой файл при опечатке в `--out`."""
     removed = []
-    for path in sorted(directory.glob("*.json")):
-        if path.name not in keep:
-            path.unlink()
-            removed.append(path.name)
+    for role in roles:
+        for path in sorted(directory.glob(f"{role}.*.json")):
+            if path.name not in keep and re.fullmatch(rf"{role}\.[0-9a-f]{{12}}\.json", path.name):
+                path.unlink()
+                removed.append(path.name)
     return removed
 
 
@@ -152,8 +219,12 @@ def main() -> int:
 
     try:
         extract = load(arguments.source)
+        reject_unrepresentable(extract)
     except SchemaError as error:
         print(f"выгрузка не соответствует docs/data-model.md §3: {error}", file=sys.stderr)
+        return 1
+    except ConversionError as error:
+        print(str(error), file=sys.stderr)
         return 1
 
     unmapped = find_unmapped(extract)
@@ -173,22 +244,31 @@ def main() -> int:
     arguments.out.mkdir(parents=True, exist_ok=True)
     ratings = build_ratings(extract)
     verbatim = build_verbatim(extract)
-    reference = build_reference(extract, unmapped if arguments.allow_unmapped else set())
+    try:
+        reference = build_reference(extract, unmapped)
+    except ConversionError as error:
+        print(str(error), file=sys.stderr)
+        return 1
 
     files = [
         write_hashed(arguments.out, "ratings", ratings),
         write_hashed(arguments.out, "verbatim", verbatim),
         write_hashed(arguments.out, "reference", reference),
     ]
+    assert [file["role"] for file in files] == ROLES
     files[0]["rows"] = len(ratings)
     files[1]["rows"] = len(verbatim["items"])
     files[2]["rows"] = sum(len(mapping) for mapping in reference["operations"].values())
 
-    dates = sorted(rating.appeal_date for rating in extract.ratings if rating.appeal_date)
+    dates = sorted(rating.appeal_date for rating in extract.ratings)
     manifest = {
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "source": arguments.source.name,
-        "period": {"from": dates[0].isoformat(), "to": dates[-1].isoformat()},
+        "period": {
+            "from": dates[0].isoformat(),
+            "to": dates[-1].isoformat(),
+            **default_periods(dates[-1]),
+        },
         "channels": extract.channels,
         "unmapped_operations": [
             {"channel": channel, "operation": trigger} for channel, trigger in sorted(unmapped)
@@ -199,7 +279,7 @@ def main() -> int:
     # файлов и дату актуальности данных (D-35, D-36).
     (arguments.out / "manifest.json").write_bytes(dump(manifest))
 
-    stale = clean_stale(arguments.out, {file["name"] for file in files} | {"manifest.json"})
+    stale = clean_stale(arguments.out, ROLES, {file["name"] for file in files})
     if stale:
         print(f"удалены прежние версии: {', '.join(stale)}")
 

@@ -91,7 +91,6 @@ class Extract:
     dictionaries: dict[str, dict[str, tuple[str, str]]]
     plan: list[PlanRow]
     labels: list[LabelRow]
-    sheet_names: list[str]
 
     @property
     def channels(self) -> list[str]:
@@ -145,7 +144,6 @@ def load(path: str | Path) -> Extract:
     from openpyxl import load_workbook
 
     workbook = load_workbook(path, read_only=True, data_only=True)
-    sheet_names = [sheet.title for sheet in workbook.worksheets]
     ratings: list[Rating] = []
     dictionaries: dict[str, dict[str, tuple[str, str]]] = {}
     plan: list[PlanRow] = []
@@ -175,7 +173,7 @@ def load(path: str | Path) -> Extract:
     workbook.close()
     if not ratings:
         raise SchemaError("в выгрузке нет ни одного листа оценок")
-    return Extract(ratings, dictionaries, plan, labels, sheet_names)
+    return Extract(ratings, dictionaries, plan, labels)
 
 
 def _require_header(sheet_name: str, header: list[str | None], expected: list[str]) -> None:

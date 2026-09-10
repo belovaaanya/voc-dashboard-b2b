@@ -61,13 +61,15 @@ data/voc-dashboard.xlsx  ──tools/xlsx_to_json.py──▶  site/data/*.json
 pip install -r tools/requirements.txt
 
 python3 tools/make_sample_data.py   # перегенерировать синтетику в data/
-python3 tools/check_data.py         # инварианты выгрузки, падает при нарушении
+python3 tools/check_data.py --sample  # инварианты выгрузки, падает при нарушении
 python3 tools/xlsx_to_json.py       # site/data/*.json для страницы
 python3 tools/test_pipeline.py      # ломает каждый инвариант намеренно
 ```
 
 `check_data.py` и `xlsx_to_json.py` запускаются в deploy-workflow до
 публикации: непротиворечивость выгрузки дешевле поймать там, чем в браузере.
+Флаг `--sample` добавляет проверки, осмысленные только для синтетики —
+ориентиры карточек и наличие ловушек.
 
 В `data/` попадает **только синтетика**: репозиторий публичный, а `xlsx`
 версионируется — реальная выгрузка, попавшая в историю, необратима

@@ -40,37 +40,33 @@ DEFAULT_OUTPUT = Path("data/voc-dashboard.xlsx")
 CURRENT_PERIOD = (date(2026, 5, 1), date(2026, 5, 31))
 PREVIOUS_PERIOD = (date(2026, 4, 1), date(2026, 4, 30))
 
-# День просадки VOC из requirements 3.2: «21.05 → VOC ↓ → платежи / выписка /
-# лояльность ↓». На нём же проверяется смена цвета линии на выходе из коридора.
+# requirements 3.2: «21.05 → VOC ↓ → платежи / выписка / лояльность ↓».
 DIP_DAY = date(2026, 5, 21)
 
 # Метаданные архива фиксированы ради детерминированности файла.
 EXTRACT_TIMESTAMP = datetime(2026, 6, 1)
-DIP_TRIGGERS = ["Отправка платежа", "Экспорт выписки из раздела", "Программа лояльности"]
 
-# (канал, период, сегмент) → (число оценок, VOC как он должен показаться на карточке).
-# АБМ за текущий период — ориентир макета: 10 459 оценок, VOC 4.90.
+# (канал, период, сегмент) → (число оценок, VOC на карточке).
+# Чем именно продиктован каждый набор — data-model §9.
 BLOCKS = [
     ("АБМ", CURRENT_PERIOD, "ММБ", 6240, 4.92),
     ("АБМ", CURRENT_PERIOD, "СБ", 4207, 4.87),
     ("АБМ", CURRENT_PERIOD, "КИБ", 12, 4.83),
-    ("АБМ", PREVIOUS_PERIOD, "ММБ", 5900, 4.88),
-    ("АБМ", PREVIOUS_PERIOD, "СБ", 3994, 4.83),
+    ("АБМ", PREVIOUS_PERIOD, "ММБ", 5900, 4.83),
+    ("АБМ", PREVIOUS_PERIOD, "СБ", 3994, 4.90),
     ("АБМ", PREVIOUS_PERIOD, "КИБ", 8, 4.75),
     ("НИБ", CURRENT_PERIOD, "ММБ", 2480, 4.74),
     ("НИБ", CURRENT_PERIOD, "СБ", 1620, 4.66),
     ("НИБ", CURRENT_PERIOD, "КИБ", 18, 4.61),
-    ("НИБ", PREVIOUS_PERIOD, "ММБ", 2400, 4.77),
-    ("НИБ", PREVIOUS_PERIOD, "СБ", 1567, 4.69),
-    ("НИБ", PREVIOUS_PERIOD, "КИБ", 18, 4.72),
+    ("НИБ", PREVIOUS_PERIOD, "ММБ", 2400, 4.80),
+    ("НИБ", PREVIOUS_PERIOD, "СБ", 1567, 4.64),
 ]
 
 CHANNEL_CODES = {"АБМ": "ABM", "НИБ": "NIB"}
 
+# Общие триггеры ведут к разным КП и продуктам: на этом различии проявляется
+# join только по триггеру, без канала (§3.2).
 DICTIONARIES = {
-    # Ключ join — пара (канал, триггер): один триггер в двух каналах ведёт к
-    # разным КП и продуктам (data-model §3.2). Join только по триггеру даст
-    # неверный разрез, и различия ниже — то, на чём эта ошибка проявляется.
     "АБМ": [
         ("Отправка платежа", "Платежи и переводы", "Платежи"),
         ("Подтверждение платежа", "Платежи и переводы", "Платежи"),
@@ -147,6 +143,33 @@ PROBLEMS = {
     ],
 }
 
+# Смещение VOC триггера и его вес в объёме, по периодам: ими задан антидрайвер
+# периода для рейтинга P0 №5.
+TRIGGER_TREND = {
+    "АБМ": {
+        "Экспорт выписки из раздела": {"previous": (-0.05, 1.0), "current": (-0.45, 2.4)},
+        "Просмотр выписки": {"previous": (-0.03, 1.0), "current": (-0.30, 1.6)},
+        "Валютный контроль": {"previous": (-0.05, 1.0), "current": (-0.35, 1.4)},
+        "Программа лояльности": {"previous": (-0.02, 1.0), "current": (-0.12, 1.0)},
+        "Отправка платежа": {"previous": (-0.08, 1.0), "current": (+0.04, 0.9)},
+        "Вход в приложение": {"previous": (-0.10, 1.2), "current": (+0.06, 0.8)},
+    },
+    "НИБ": {
+        "Подписание документа": {"previous": (-0.04, 1.0), "current": (-0.40, 1.8)},
+        "Импорт реестра платежей": {"previous": (-0.06, 1.0), "current": (-0.28, 1.3)},
+        "Отправка платежа": {"previous": (-0.05, 1.0), "current": (+0.05, 0.9)},
+    },
+}
+
+# Триггеры просадки и их вес в ней: порядок обязан читаться, а не выигрываться
+# третьим знаком (requirements 3.2).
+DIP_TRIGGERS = {
+    "Отправка платежа": 1.0,
+    "Экспорт выписки из раздела": 0.62,
+    "Программа лояльности": 0.30,
+}
+DIP_DEPTH = 0.75
+
 # Триггер → область (domain) для разметки проблемы.
 TRIGGER_DOMAIN = {
     "Отправка платежа": "Платежи",
@@ -169,52 +192,62 @@ COMMENTS = {
     1: [
         "Второй день не могу отправить платёж, поддержка молчит.",
         "Всё сломано, работать невозможно.",
+        "Деньги списались, платёж не ушёл. Никто не может объяснить, где они.",
+        "Третье обращение по одной и той же проблеме, результата нет.",
     ],
     2: [
         "Работает, но приходится делать лишние шаги.",
         "Долго и непонятно, где искать нужный раздел.",
+        "Каждый раз приходится звонить в поддержку, чтобы завершить операцию.",
+        "Обещали решить за сутки, идёт четвёртый день.",
     ],
     3: [
         "В целом нормально, но есть к чему придраться.",
         "Пользоваться можно, удобства не хватает.",
+        "Половина операций проходит с первого раза, половина — со второго.",
+        "Сойдёт, но коллеги в другом банке делают то же самое быстрее.",
     ],
     4: [
         "Удобно, но хотелось бы быстрее.",
         "Почти всё устроило, мелкие шероховатости остались.",
+        "Работает предсказуемо, не хватает только уведомления о статусе.",
+        "Хорошо, но выгрузку приходится перепроверять руками.",
     ],
     5: [
         "Всё быстро и понятно, спасибо.",
         "Удобно, ничего лишнего.",
         "Пользуюсь каждый день, вопросов нет.",
+        "Разобрался без инструкции, это лучшая похвала.",
+        "Перешли из другого банка и не пожалели.",
     ],
 }
 
+# Длинный многострочный комментарий: на коротких однострочных фразах не
+# проверить ни перенос, ни обрезку в карточке и таблице.
 LONG_COMMENT = (
     "Выгружаю выписку для бухгалтерии каждый месяц, и каждый раз приходится "
     "делать это в три приёма, потому что за период больше тридцати дней файл "
-    "не формируется, а в формате 1С часть операций теряется — из-за этого "
-    "сверка занимает лишний день, и это единственное, что меня всерьёз "
-    "раздражает в остальном удобном банке."
+    "не формируется.\n"
+    "В формате 1С часть операций теряется — из-за этого сверка занимает лишний "
+    "день, и это единственное, что меня всерьёз раздражает в остальном удобном "
+    "банке."
 )
 
 PLAN = [
-    # Коридор для АБМ за текущий период содержит 4.90 — бейдж «В плане»
-    # правдив (V-13). Пустой сегмент — план на канал целиком.
     ("АБМ", None, CURRENT_PERIOD, 4.85, 4.95),
     ("АБМ", "ММБ", CURRENT_PERIOD, 4.88, 4.96),
     ("АБМ", "СБ", CURRENT_PERIOD, 4.80, 4.90),
     ("АБМ", "КИБ", CURRENT_PERIOD, 4.75, 4.90),
     ("АБМ", None, PREVIOUS_PERIOD, 4.82, 4.90),
-    ("АБМ", "ММБ", PREVIOUS_PERIOD, 4.84, 4.92),
+    ("АБМ", "ММБ", PREVIOUS_PERIOD, 4.86, 4.94),
     ("АБМ", "СБ", PREVIOUS_PERIOD, 4.78, 4.88),
     ("НИБ", None, CURRENT_PERIOD, 4.70, 4.80),
-    ("НИБ", "ММБ", CURRENT_PERIOD, 4.70, 4.82),
+    ("НИБ", "ММБ", CURRENT_PERIOD, 4.76, 4.86),
     ("НИБ", "СБ", CURRENT_PERIOD, 4.60, 4.72),
     ("НИБ", None, PREVIOUS_PERIOD, 4.70, 4.80),
-    # НИБ/КИБ плана не имеет намеренно: на этом срезе проверяется D-04 —
-    # бейдж и плановая полоса не рисуются, остальная карточка работает.
 ]
 
+# Часть типов проблем подписи не имеет: на них проверяется fallback D-02.
 LABELS = [
     ("канал", "АБМ", "Мобильный банк для бизнеса"),
     ("канал", "НИБ", "Интернет-банк для бизнеса"),
@@ -223,20 +256,16 @@ LABELS = [
     ("сегмент", "КИБ", "Крупный и инвестиционный бизнес"),
     ("тип проблемы", "Ошибка", "Техническая ошибка"),
     ("тип проблемы", "Не нашёл", "Не нашёл нужное"),
-    # Остальные типы проблем подписи не имеют намеренно: на них проверяется
-    # D-02 — нет подписи, показываем код.
 ]
 
 
-# Форма распределения оценок: доли низких оценок пропорциональны параметру s,
-# поэтому среднее линейно по s — mean(s) = 5 − LOW_LOSS·s. Это даёт способ
-# задать срезу нужный VOC, не подбирая доли руками.
+# Доли низких оценок пропорциональны параметру s, поэтому среднее линейно по s:
+# так срезу задаётся нужный VOC без подбора долей руками.
 LOW_SHARES = [0.010, 0.008, 0.018, 0.090]
 LOW_LOSS = sum(share * (5 - mark) for share, mark in zip(LOW_SHARES, [1, 2, 3, 4]))
 MAX_SCALE = 7.0
 
 DAY_WAVE = 0.06
-DIP_DEPTH = 0.30
 
 
 def shape(target_voc: float) -> list[float]:
@@ -246,40 +275,61 @@ def shape(target_voc: float) -> list[float]:
     return low + [1 - sum(low)]
 
 
+def period_key(period: tuple[date, date]) -> str:
+    return "current" if period == CURRENT_PERIOD else "previous"
+
+
+def trend(channel: str, period: tuple[date, date], trigger: str) -> tuple[float, float]:
+    """Смещение VOC и вес в объёме для триггера в этом периоде."""
+    return TRIGGER_TREND.get(channel, {}).get(trigger, {}).get(period_key(period), (0.0, 1.0))
+
+
 def day_target(target_voc: float, day: date) -> float:
-    """VOC дня: волна вокруг среднего среза плюс явная просадка на DIP_DAY.
+    """VOC дня: волна вокруг среднего среза.
 
     Волна нужна, чтобы линия графика выходила за плановый коридор в обе
     стороны — иначе смену цвета на выходе из коридора не проверить.
     """
-    wave = DAY_WAVE * math.sin(2 * math.pi * (day.toordinal() % 9) / 9)
-    dip = DIP_DEPTH if day == DIP_DAY else 0.0
-    return target_voc + wave - dip
+    return target_voc + DAY_WAVE * math.sin(2 * math.pi * (day.toordinal() % 9) / 9)
 
 
-def solve_marks(days: list[date], target_voc: float, rng: random.Random) -> list[int]:
-    """Оценки среза: по одной на каждый слот `days`, со средним, дающим
-    `target_voc` при округлении до двух знаков (D-21).
+def slot_shift(operations: list[str], offsets: dict, day: date) -> float:
+    """Смещение VOC строки: тренд её триггеров плюс просадка дня.
+
+    Просадка ложится на триггеры пропорционально их весу, а не ровным слоем
+    на весь день: иначе её не объяснить разрезом, а requirements 3.2 требует
+    именно объяснения.
+    """
+    trend_shift = sum(offsets.get(trigger, 0.0) for trigger in operations) / len(operations)
+    if day != DIP_DAY:
+        return trend_shift
+    return trend_shift - DIP_DEPTH * max(DIP_TRIGGERS.get(t, 0.0) for t in operations)
+
+
+def solve_marks(slots: list[float], target_voc: float, rng) -> list[int]:
+    """Оценки среза: по одной на слот, со средним, дающим `target_voc` при
+    округлении до двух знаков (D-21).
 
     Сумма подгоняется точно: «примерно то же среднее» на карточке читается
     как ошибка расчёта, а не как свойство тестовых данных.
     """
-    count = len(days)
+    count = len(slots)
     required_sum = round(target_voc * count)
     if not count <= required_sum <= 5 * count:
         raise ValueError(f"VOC {target_voc} недостижим на {count} оценках")
 
-    marks = [rng.choices(MARKS, weights=shape(day_target(target_voc, day)))[0] for day in days]
+    marks = [rng.choices(MARKS, weights=shape(target))[0] for target in slots]
 
-    # Остаток после случайной выборки размазывается по строкам циклически,
-    # поэтому дневная структура сохраняется, а сумма среза становится точной.
+    # Порядок обхода случайный: по порядку строк остаток смещал бы ранние дни.
+    order = list(range(count))
+    rng.shuffle(order)
     position = 0
     while sum(marks) != required_sum:
         step = 1 if sum(marks) < required_sum else -1
         for _ in range(count + 1):
-            if position >= 4 * count:
+            if position >= 6 * count:
                 raise ValueError("не удалось подогнать сумму оценок")
-            index = position % count
+            index = order[position % count]
             position += 1
             candidate = marks[index] + step
             if 1 <= candidate <= 5:
@@ -298,17 +348,17 @@ def day_weights(period: tuple[date, date]) -> list[tuple[date, float]]:
     days = []
     day = start
     while day <= end:
-        weight = 0.25 if day.weekday() >= 5 else 1.0
-        days.append((day, weight))
+        days.append((day, 0.25 if day.weekday() >= 5 else 1.0))
         day += timedelta(days=1)
     return days
 
 
 def allocate_days(count: int, period: tuple[date, date]) -> list[date]:
-    """Распределяет `count` оценок по дням периода методом наибольших остатков.
+    """Распределяет `count` оценок по дням методом наибольших остатков.
 
-    Каждый календарный день получает хотя бы одну оценку — иначе в графике
-    появятся дыры, которых в выгрузке за месяц не бывает.
+    Пока оценок больше, чем дней, заполнен каждый календарный день — дыры в
+    графике за месяц выглядели бы дефектом расчёта. На срезах вроде `КИБ`
+    оценок меньше, чем дней, и разреженность там неизбежна.
     """
     days = day_weights(period)
     if count < len(days):
@@ -329,22 +379,50 @@ def allocate_days(count: int, period: tuple[date, date]) -> list[date]:
     return result
 
 
-def build_ratings(rng: random.Random) -> dict[str, list[list[object]]]:
+def pick_operations(triggers, weights, collapsing, day, index, rng) -> list[str]:
+    if day == DIP_DAY and index % 3 == 0:
+        available = [t for t in DIP_TRIGGERS if t in triggers]
+        return [rng.choices(available, weights=[DIP_TRIGGERS[t] for t in available])[0]]
+    if index % 23 == 0:
+        # Триггеры, сходящиеся в один продукт: оценка обязана посчитаться в
+        # продукте один раз (§5.2).
+        return list(collapsing)
+    if index % 37 == 0:
+        return rng.sample(triggers, 3)
+    if index % 11 == 0:
+        return rng.sample(triggers, 2)
+    return [rng.choices(triggers, weights=weights)[0]]
+
+
+def build_ratings(rng) -> dict[str, list[list[object]]]:
     sheets: dict[str, list[list[object]]] = {channel: [] for channel in DICTIONARIES}
     counters = {channel: 0 for channel in DICTIONARIES}
 
     for channel, period, segment, count, target_voc in BLOCKS:
         triggers = [trigger for trigger, _, _ in DICTIONARIES[channel]]
+        offsets = {t: trend(channel, period, t)[0] for t in triggers}
+        weights = [trend(channel, period, t)[1] for t in triggers]
         collapsing = COLLAPSING_PAIRS[channel]
-        days = allocate_days(count, period)
-        marks = solve_marks(days, target_voc, rng)
 
-        for index, (day, mark) in enumerate(zip(days, marks)):
+        days = allocate_days(count, period)
+        operations = [
+            pick_operations(triggers, weights, collapsing, day, index, rng)
+            for index, day in enumerate(days)
+        ]
+        shifts = [slot_shift(ops, offsets, day) for day, ops in zip(days, operations)]
+        # Смещения триггеров центрируются: иначе средним среза уезжает весь
+        # блок, и подгонка суммы съедает ровно ту структуру, которую задали.
+        centre = target_voc - sum(shifts) / len(shifts)
+        slots = [
+            min(day_target(centre, day) + shift, 5.0)
+            for day, shift in zip(days, shifts)
+        ]
+        marks = solve_marks(slots, target_voc, rng)
+
+        for index, (day, ops, mark) in enumerate(zip(days, operations, marks)):
             counters[channel] += 1
             sheets[channel].append(
-                _rating_row(
-                    channel, segment, day, mark, index, counters[channel], triggers, collapsing, rng
-                )
+                _rating_row(channel, segment, day, mark, ops, index, counters[channel], rng)
             )
 
     for channel in sheets:
@@ -352,21 +430,8 @@ def build_ratings(rng: random.Random) -> dict[str, list[list[object]]]:
     return sheets
 
 
-def _rating_row(channel, segment, day, mark, index, counter, triggers, collapsing, rng):
+def _rating_row(channel, segment, day, mark, operations, index, counter, rng):
     code = f"{CHANNEL_CODES[channel]}-{day:%Y%m}-{counter:06d}"
-
-    if index % 23 == 0:
-        # Триггеры, сходящиеся в один продукт: оценка обязана посчитаться
-        # в продукте один раз (§5.2).
-        operations = list(collapsing)
-    elif index % 11 == 0:
-        operations = rng.sample(triggers, 2)
-    elif index % 37 == 0:
-        operations = rng.sample(triggers, 3)
-    else:
-        operations = [rng.choice(triggers)]
-    if day == DIP_DAY and mark <= 3:
-        operations = [trigger for trigger in DIP_TRIGGERS if trigger in triggers][: 1 + index % 2]
 
     # Разметка идёт за комментарием: без прямой речи размечать нечего, поэтому
     # такие оценки попадают в группу «Без разметки» (D-11).
@@ -376,7 +441,7 @@ def _rating_row(channel, segment, day, mark, index, counter, triggers, collapsin
     problem = None
     if mark <= 4 or index % 3 == 0:
         comment = LONG_COMMENT if index % 401 == 0 else rng.choice(COMMENTS[mark])
-        domain = TRIGGER_DOMAIN.get(operations[0], "Поддержка")
+        domain = TRIGGER_DOMAIN[operations[0]]
         if mark <= 4 and index % 13 != 0:
             problem_type, problem = rng.choice(PROBLEMS[domain])
 
@@ -384,11 +449,10 @@ def _rating_row(channel, segment, day, mark, index, counter, triggers, collapsin
     if index % 17 == 0:
         expertise = f"Экспертиза оператора: обращение отнесено к теме «{operations[0]}»."
 
-    answer_date = day + timedelta(days=index % 3)
     return [
         code,
         day,
-        answer_date,
+        day + timedelta(days=index % 3),
         channel,
         segment,
         ";".join(operations),
