@@ -7,11 +7,11 @@
 */
 
 import { EMPTY, ERROR, LOADING, READY, createBlock } from './block.js';
-import { availableDimensions, channelsOf } from './dimensions.js';
+import { CHANNEL_LABEL_DIMENSION, availableDimensions, channelsOf } from './dimensions.js';
 import { renderHeader } from './header.js';
 import { createLabels } from './labels.js';
-import { loadRatings, loadSource } from './loader.js';
-import { onStateChange, readState, writeState } from './url-state.js';
+import { hasRole, loadRatings, loadReference, loadSource } from './loader.js';
+import { onStateChange, readState, syncState, writeState } from './url-state.js';
 
 const NEXT_SLICE = 'Блок появится в следующем слайсе — здесь только каркас.';
 
@@ -32,22 +32,22 @@ function inPeriod(row, state) {
   return true;
 }
 
-function matchesFilters(row, state, dimensions) {
+function matchesFilters(row, state, dimensions, reference) {
   for (const dimension of dimensions) {
     const selected = state.filters?.[dimension.key];
     if (!selected?.length) continue;
-    const values = dimension.values(row).filter(Boolean);
+    const values = dimension.values(row, reference).filter(Boolean);
     if (!values.some((value) => selected.includes(value))) return false;
   }
   return true;
 }
 
-function slice(rows, state, dimensions) {
+function slice(rows, state, dimensions, reference) {
   return rows.filter(
     (row) =>
       (!state.channel || row.channel === state.channel) &&
       inPeriod(row, state) &&
-      matchesFilters(row, state, dimensions),
+      matchesFilters(row, state, dimensions, reference),
   );
 }
 
@@ -75,11 +75,15 @@ function main() {
 
   loadSource()
     .then(async (source) => {
-      const rows = await loadRatings(source);
+      /* reference грузится вместе с ratings: без него нет ни подписей, ни разрезов КП/Продукты */
+      const [rows, reference] = await Promise.all([
+        loadRatings(source),
+        hasRole(source, 'reference') ? loadReference(source) : Promise.resolve(null),
+      ]);
       if (!Array.isArray(rows)) throw new Error('ratings: ожидался массив объектов (data-model §7)');
 
-      const label = createLabels(source.manifest);
-      const dimensions = availableDimensions(rows);
+      const label = createLabels(reference);
+      const dimensions = availableDimensions(rows, reference);
       const channels = channelsOf(rows);
 
       /*
@@ -92,13 +96,16 @@ function main() {
       }
       const segments = [...volumeBySegment.entries()].sort((a, b) => b[1] - a[1]).map(([code]) => code);
       segments.slice(0, 3).forEach((segment, index) => {
-        blocks.get(`voc-segment-${index + 1}`).setTitle(`VOC ${label('segment', segment)}`);
+        blocks.get(`voc-segment-${index + 1}`).setTitle(`VOC ${label('сегмент', segment)}`);
       });
 
       const render = (state) => {
         const active = state.channel && channels.includes(state.channel) ? state : { ...state, channel: channels[0] ?? null };
-        const rowsInSlice = slice(rows, active, dimensions);
-        blocks.get('voc-channel').setTitle(active.channel ? `VOC ${label('channel', active.channel)}` : 'VOC канала');
+        if (active !== state) syncState(active);
+        const rowsInSlice = slice(rows, active, dimensions, reference);
+        blocks.get('voc-channel').setTitle(
+          active.channel ? `VOC ${label(CHANNEL_LABEL_DIMENSION, active.channel)}` : 'VOC канала',
+        );
 
         renderHeader(hosts.header, {
           channels,

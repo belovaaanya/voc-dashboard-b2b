@@ -1,14 +1,18 @@
 /*
-  Человекочитаемые подписи приходят из справочника в манифесте; нет подписи —
-  показываем код (D-02).
+  Человекочитаемые подписи приходят из справочника `labels` в `reference.json`;
+  нет подписи — показываем код (D-02).
+
+  Формат: { "<измерение>", { "<код>": "<подпись>" } } (data-model §7). Имя
+  измерения там — то, что аналитик вписал в колонку `измерение` листа `labels`,
+  то есть человеческое слово («канал», «сегмент»), а не наш ключ фильтра.
+  Поэтому измерения ищутся без учёта регистра и пробелов по краям: лист
+  заполняется руками.
 */
 
-export function createLabels(manifest) {
+export function createLabels(reference) {
   const byDimension = new Map();
-  for (const entry of manifest?.labels ?? []) {
-    if (!entry?.dimension || !entry?.code || !entry?.label) continue;
-    if (!byDimension.has(entry.dimension)) byDimension.set(entry.dimension, new Map());
-    byDimension.get(entry.dimension).set(entry.code, entry.label);
+  for (const [dimension, codes] of Object.entries(reference?.labels ?? {})) {
+    byDimension.set(dimension.trim().toLowerCase(), codes);
   }
-  return (dimension, code) => byDimension.get(dimension)?.get(code) ?? code;
+  return (dimension, code) => byDimension.get(String(dimension).trim().toLowerCase())?.[code] ?? code;
 }

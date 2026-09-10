@@ -1,8 +1,8 @@
 /*
   Слой загрузки данных. Единственный модуль, который ходит в сеть.
 
-  Контракт — docs/data-model.md §7. Держится тонким намеренно: контракт может
-  уточнить сессия data pipeline, и тогда правка затрагивает только этот файл.
+  Контракт — docs/data-model.md §7. Держится тонким намеренно: контракт
+  уточняется сессией data pipeline, и правка затрагивает только этот файл.
 */
 
 const DATA_DIR = 'data/';
@@ -25,15 +25,22 @@ function assertManifest(manifest, url) {
   if (!manifest || typeof manifest !== 'object') {
     throw new Error(`${url}: манифест не является объектом`);
   }
-  if (!manifest.files || typeof manifest.files.ratings !== 'string') {
-    throw new Error(`${url}: в манифесте нет files.ratings`);
+  if (!Array.isArray(manifest.files)) {
+    throw new Error(`${url}: в манифесте нет массива files`);
+  }
+  if (!manifest.files.some((file) => file?.role === 'ratings')) {
+    throw new Error(`${url}: в files нет записи с role "ratings"`);
   }
   return manifest;
 }
 
 async function loadManifestFrom(dir) {
   const url = `${dir}manifest.json`;
-  /* Манифест не кэшируется, имена файлов внутри него несут хэш содержимого (D-36) */
+  /*
+    Заголовки кэширования на Pages не настраиваются, поэтому «не кэшировать
+    манифест» из D-36 обеспечивает страница: иначе браузер отдаст старый
+    манифест и запросит по нему уже удалённые конвертером файлы
+  */
   return assertManifest(await fetchJson(url, 'no-store'), url);
 }
 
@@ -54,16 +61,26 @@ export async function loadSource() {
   }
 }
 
-function fileUrl(source, kind) {
-  const name = source.manifest.files?.[kind];
-  if (typeof name !== 'string') {
-    throw new Error(`в манифесте нет files.${kind}`);
+/* Имя файла несёт хэш содержимого, поэтому берётся из манифеста по role (D-36) */
+function fileUrl(source, role) {
+  const entry = source.manifest.files.find((file) => file?.role === role);
+  if (typeof entry?.name !== 'string') {
+    throw new Error(`в манифесте нет файла с role "${role}"`);
   }
-  return source.dir + name;
+  return source.dir + entry.name;
+}
+
+export function hasRole(source, role) {
+  return source.manifest.files.some((file) => file?.role === role);
 }
 
 export function loadRatings(source) {
   return fetchJson(fileUrl(source, 'ratings'), 'default');
+}
+
+/* Справочник: подписи, join триггер → КП/продукт, плановые коридоры */
+export function loadReference(source) {
+  return fetchJson(fileUrl(source, 'reference'), 'default');
 }
 
 /* Тексты грузятся по требованию, а не при открытии страницы (data-model §7) */

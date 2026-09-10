@@ -49,6 +49,15 @@ export function writeState(state) {
   window.history.pushState(null, '', toSearch(state));
 }
 
+/*
+  Достроенное по умолчанию состояние дописывается в URL без новой записи в
+  истории: иначе пересланная ссылка без ?channel покажет получателю его первый
+  канал, а не срез отправителя (D-31)
+*/
+export function syncState(state) {
+  window.history.replaceState(null, '', toSearch(state));
+}
+
 export function onStateChange(handler) {
   window.addEventListener('popstate', () => handler(readState()));
 }
