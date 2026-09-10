@@ -29,9 +29,7 @@
 - [x] Генератор тестовых данных → `data/voc-dashboard.xlsx` — детерминированный, ориентиры карточки соблюдены ([data-model §9](docs/data-model.md#9-тестовые-данные))
 - [x] Скрипт проверки непротиворечивости данных — `tools/check_data.py`, каждый инвариант проверен падением в `tools/test_pipeline.py`
 - [x] Конвертер `xlsx` → `site/data/*.json` — `tools/xlsx_to_json.py`
-- [ ] Подключить конвертер к deploy-workflow
-  - [x] step'ы проверки и конвертации добавлены в `deploy-pages.yml`
-  - [ ] зелёный deploy и доступность `site/data/manifest.json` по URL — проверяется после merge в `main`
+- [x] Подключить конвертер к deploy-workflow — `check_data.py` и `xlsx_to_json.py` стоят перед публикацией, deploy зелёный, `site/data/` отдаётся по URL
 
 ## Этап 2 — каркас
 
