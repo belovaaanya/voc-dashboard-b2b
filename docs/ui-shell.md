@@ -4,8 +4,8 @@
 служебные состояния, шапка, состояние в URL и **контракт блока**. Самих блоков
 здесь нет: карточки метрик описаны в [blocks-metrics](blocks-metrics.md), график
 — в [blocks-dynamics](blocks-dynamics.md), рейтинг и heatmap — в
-[blocks-antidrivers](blocks-antidrivers.md), прямая речь и инсайты — в своих
-слайсах.
+[blocks-antidrivers](blocks-antidrivers.md), инсайты — в
+[blocks-insights](blocks-insights.md), прямая речь — в своём слайсе.
 
 Связанные документы: [design-spec](design-spec.md) (замеры и палитра),
 [design-validation](design-validation.md) (`V-xx`), [decisions](decisions.md)
@@ -32,6 +32,7 @@ site/
 ├── js/timeseries.js      интервалы и VOC временных рядов
 ├── js/chart-geometry.js  координаты, линии и области SVG-графика
 ├── js/antidrivers.js     рейтинг вклада и матрица по времени
+├── js/insights.js        дневные изменения VOC и их причины
 ├── js/dimensions.js      список измерений и вывод их значений из данных
 ├── js/labels.js          подписи из справочника с fallback на код
 ├── js/block.js           карточка блока и три служебных состояния
@@ -122,7 +123,7 @@ python3 -m http.server 4173 --directory site
 | `rows` | все оценки выгрузки, без фильтров |
 | `slice` | оценки после канала, периода и фильтров — то, что показывает дашборд |
 | `previousSlice` | тот же срез за предыдущий аналогичный период (`D-23`, `D-24`) |
-| `state` | `{ channel, preset, from, to, filters }` — разрешённое состояние, а не сырое из URL |
+| `state` | `{ channel, preset, from, to, focus, filters }` — разрешённое состояние, а не сырое из URL |
 | `period` | `{ preset, from, to, complete }` текущего периода |
 | `previousPeriod` | период сравнения той же формы |
 | `reference` | `reference.json` целиком: `operations`, `plan`, `labels` |
@@ -213,6 +214,7 @@ URL — единственный источник состояния, читае
 | `channel` | код канала |
 | `preset` | семантика периода: один из пяти preset или `custom` |
 | `from`, `to` | границы периода, `YYYY-MM-DD` |
+| `focus` | выбранная дата связи график → антидрайверы → инсайты, `YYYY-MM-DD` |
 | `segment`, `trigger`, `cp`, `product`, `domain` | значения фильтра через запятую |
 
 Все параметры читаются при загрузке. Канал, период и каждый поддержанный фильтр
@@ -220,6 +222,11 @@ URL — единственный источник состояния, читае
 Клик по сегментной карточке и контрол `Сегменты` изменяют один и тот же параметр.
 Достроенное по умолчанию состояние дописывается в URL через `replaceState`,
 поэтому ссылка полна и без явных параметров.
+
+`focus` хранит только выбранную дату, а не local period блока. При разрешении
+состояния дата вне global period удаляется через `replaceState`. График и
+инсайты меняют `focus`, а антидрайверы строят по нему local period через
+`context.select`, не меняя границы в шапке (`D-31`).
 
 Период по умолчанию берётся из `manifest.period` (`D-41`) и раскрывается
 `period.js` в календарный месяц: строка `YYYY-MM` не знает, полон ли месяц, а

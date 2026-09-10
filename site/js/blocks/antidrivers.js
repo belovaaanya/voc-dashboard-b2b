@@ -4,6 +4,7 @@ import { chartDomain, linePaths, plotPoints } from '../chart-geometry.js';
 import { DIMENSIONS } from '../dimensions.js';
 import { element } from '../dom.js';
 import { formatCount, formatDate, formatDateRange, formatImpact, formatVoc } from '../format.js';
+import { previousDateForFocus } from '../insights.js';
 import { roundImpact } from '../round.js';
 import { recommendedScale } from '../timeseries.js';
 
@@ -39,6 +40,13 @@ function tabGroup(label, options, selected, onSelect) {
 function controls(block, context, dimensions) {
   const wrap = element('span', 'antidriver-controls');
   wrap.append(element('span', 'antidriver-period', formatDateRange(context.period.from, context.period.to)));
+  if (context.state.focus) {
+    const clear = element('button', 'antidriver-focus-clear', `Дата ${formatDate(context.state.focus)} ×`);
+    clear.type = 'button';
+    clear.setAttribute('aria-label', `Сбросить выбранную дату ${formatDate(context.state.focus)}`);
+    clear.addEventListener('click', () => context.setState({ ...context.state, focus: null }));
+    wrap.append(clear);
+  }
   wrap.append(
     tabGroup(
       'Вид антидрайверов',
@@ -206,15 +214,32 @@ export function renderAntidrivers(block, context) {
     return;
   }
 
+  const focus = context.state.focus;
+  const selection = focus ? context.select({ from: focus, to: focus }) : null;
+  const previousFocus = focus ? previousDateForFocus(focus, context.period, context.previousPeriod) : null;
+  const previousSelection = previousFocus ? context.select({ from: previousFocus, to: previousFocus }) : null;
+  const viewContext = selection
+    ? {
+        ...context,
+        slice: selection.rows,
+        previousSlice: previousSelection?.rows ?? [],
+        period: selection.period,
+        previousPeriod: previousSelection?.period ?? selection.previousPeriod,
+      }
+    : context;
   const dimensions = DIMENSION_KEYS.map((key) => DIMENSIONS.find((dimension) => dimension.key === key)).filter(Boolean);
   if (!dimensions.some(({ key }) => key === selectedAntidriverDimension)) {
     selectedAntidriverDimension = dimensions[0].key;
   }
   const dimension = dimensions.find(({ key }) => key === selectedAntidriverDimension);
-  const project = (row) => dimension.values(row, context.reference);
-  const ranking = rankAntidrivers(context.previousSlice, context.slice, project);
+  const project = (row) => dimension.values(row, viewContext.reference);
+  const ranking = rankAntidrivers(viewContext.previousSlice, viewContext.slice, project);
 
-  block.setNote(controls(block, context, dimensions));
+  block.setNote(controls(block, viewContext, dimensions));
+  if (viewContext.slice.length === 0) {
+    block.setState(EMPTY);
+    return;
+  }
   if (ranking.delta === null) {
     block.setContent(comparisonUnavailable());
     return;
@@ -224,11 +249,11 @@ export function renderAntidrivers(block, context) {
     return;
   }
 
-  const scale = recommendedScale(context.period);
-  const heatmap = buildHeatmap(context.slice, context.period, scale, project, ranking.items.map(({ key }) => key));
+  const scale = recommendedScale(viewContext.period);
+  const heatmap = buildHeatmap(viewContext.slice, viewContext.period, scale, project, ranking.items.map(({ key }) => key));
   const content = selectedAntidriverView === 'heatmap'
-    ? heatmapView(context, heatmap)
-    : rankingView(block, context, ranking, heatmap);
+    ? heatmapView(viewContext, heatmap)
+    : rankingView(block, viewContext, ranking, heatmap);
   block.setContent(content);
   if (selectedAntidriverView === 'heatmap' && focusedAntidriver) {
     block.element.querySelector('.heatmap tr.is-focused .heatmap-cell')?.focus();

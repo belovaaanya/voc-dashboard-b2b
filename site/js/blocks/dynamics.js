@@ -205,7 +205,7 @@ function appendPointLabels(plot, series, points, plan) {
   plot.append(labels);
 }
 
-function appendPoints(plot, series, points, tooltip, plan) {
+function appendPoints(block, plot, series, points, tooltip, plan, context) {
   const group = svgNode('g', 'chart-points');
   series.forEach((bucket, index) => {
     const point = points[index];
@@ -217,14 +217,28 @@ function appendPoints(plot, series, points, tooltip, plan) {
     });
     circle.setAttribute('tabindex', '0');
     circle.setAttribute('role', 'button');
+    circle.setAttribute('data-focus-date', bucket.from);
+    const selected = context.state.focus >= bucket.from && context.state.focus <= bucket.to;
+    circle.classList.toggle('is-selected', selected);
+    circle.setAttribute('aria-pressed', String(selected));
     circle.setAttribute(
       'aria-label',
       `${bucketLabel(bucket)}: VOC ${formatVoc(bucket.voc)}, ${formatCount(bucket.count)} оценок`,
     );
     const reveal = () => showTooltip(tooltip, bucket, point);
+    const select = () => {
+      const focus = selected ? null : bucket.from;
+      context.setState({ ...context.state, focus });
+      block.element.querySelector(`[data-focus-date="${bucket.from}"]`)?.focus();
+    };
     circle.addEventListener('mouseenter', reveal);
     circle.addEventListener('focus', reveal);
-    circle.addEventListener('click', reveal);
+    circle.addEventListener('click', select);
+    circle.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      select();
+    });
     circle.addEventListener('mouseleave', () => {
       if (document.activeElement !== circle) tooltip.hidden = true;
     });
@@ -302,7 +316,7 @@ function renderChart(block, context, scale, plan) {
   if (hasPrevious) appendPathGroup(plot, linePaths(previousPoints), 'chart-line chart-line--previous');
   appendPlanLayers(plot, defs, currentPaths, currentAreas, shownPlan, domain, ids);
   appendPointLabels(plot, current, currentPoints, shownPlan);
-  appendPoints(plot, current, currentPoints, tooltip, shownPlan);
+  appendPoints(block, plot, current, currentPoints, tooltip, shownPlan, context);
   svg.append(defs, plot);
   stage.append(svg, tooltip);
   chart.append(stage);

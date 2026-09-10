@@ -10,13 +10,16 @@ const PARAM_CHANNEL = 'channel';
 const PARAM_PRESET = 'preset';
 const PARAM_FROM = 'from';
 const PARAM_TO = 'to';
+const PARAM_FOCUS = 'focus';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const VALID_PRESETS = new Set([...PRESETS, 'custom']);
 
 function readDate(params, name) {
   const value = params.get(name);
-  return value && ISO_DATE.test(value) ? value : null;
+  if (!value || !ISO_DATE.test(value)) return null;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value ? value : null;
 }
 
 export function readState(search = window.location.search) {
@@ -33,6 +36,7 @@ export function readState(search = window.location.search) {
     preset: VALID_PRESETS.has(preset) ? preset : null,
     from: readDate(params, PARAM_FROM),
     to: readDate(params, PARAM_TO),
+    focus: readDate(params, PARAM_FOCUS),
     filters,
   };
 }
@@ -43,6 +47,7 @@ export function toSearch(state) {
   if (VALID_PRESETS.has(state.preset)) params.set(PARAM_PRESET, state.preset);
   if (state.from) params.set(PARAM_FROM, state.from);
   if (state.to) params.set(PARAM_TO, state.to);
+  if (state.focus) params.set(PARAM_FOCUS, state.focus);
   for (const dimension of DIMENSIONS) {
     const values = state.filters?.[dimension.key];
     if (values?.length) params.set(dimension.key, values.join(','));
@@ -78,4 +83,8 @@ export function withFilter(filters, dimension, values) {
   if (values?.length) next[dimension] = values;
   else delete next[dimension];
   return next;
+}
+
+export function focusInPeriod(focus, period) {
+  return focus && focus >= period.from && focus <= period.to ? focus : null;
 }
