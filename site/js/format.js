@@ -48,6 +48,12 @@ export function formatCount(value) {
   return formatNumber(value, 0);
 }
 
+/* Доли — один знак после запятой (D-40); пробел перед знаком процента неразрывный */
+export function formatShare(value) {
+  if (!Number.isFinite(value)) return '—';
+  return `${formatNumber(value, 1)}${NBSP}%`;
+}
+
 /*
   Даты разбираем по частям строки: new Date('2026-05-12') — UTC-полночь, и в
   часовом поясе западнее Гринвича toLocale* отдаёт предыдущий день

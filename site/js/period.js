@@ -151,3 +151,21 @@ function iso(date) {
 function normalize(value) {
   return iso(parse(value));
 }
+
+/**
+ * Период по умолчанию берётся из выгрузки, а не из часов машины (`D-41`): на
+ * фиксированных датах сэмпла «по сегодня» дало бы пустой дашборд при первой же
+ * загрузке.
+ *
+ * Месяц раскрывается здесь, а не читается из `period.current`: строка
+ * `YYYY-MM` не знает, полон ли месяц, а без этого не работает выравнивание
+ * сравнения по числу дней (`D-24`). Расхождение двух полей манифеста — ошибка
+ * сборки, а не повод молча выбрать одно из них.
+ */
+export function defaultPeriod({ to, current } = {}) {
+  const period = resolvePreset('month', to);
+  if (current && period.from.slice(0, 7) !== current) {
+    throw new Error(`Манифест противоречив: period.current ${current}, последняя оценка ${to}`);
+  }
+  return period;
+}

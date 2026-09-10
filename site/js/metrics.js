@@ -5,6 +5,8 @@
  * отсутствие. Числа полной точности, округление на выводе (`D-21`).
  */
 
+import { roundDelta } from './round.js';
+
 export const MARKS = [1, 2, 3, 4, 5];
 
 /** `docs/data-model.md` §4. */
@@ -30,6 +32,30 @@ export function markDistribution(ratings) {
     const count = ratings.filter((rating) => rating.mark === mark).length;
     return { mark, count, share: total === 0 ? null : (count * 100) / total };
   });
+}
+
+/**
+ * Изменение VOC к предыдущему периоду. Пустой любой из двух срезов — `null`,
+ * а не `0`: «сравнивать не с чем» и «не изменилось» — разные ответы.
+ */
+export function vocDelta(ratings, previousRatings) {
+  const current = voc(ratings);
+  const previous = voc(previousRatings);
+  if (current === null || previous === null) return null;
+  return current - previous;
+}
+
+/**
+ * Направление тренда выводится из знака дельты, а не задаётся отдельно
+ * (`V-15`). Сравнивается **округлённая** дельта: иначе `+0,004` покажет
+ * стрелку роста рядом с подписью `+0,00` и интерфейс возразит сам себе
+ * (тот же принцип, что в `D-22`).
+ */
+export function trendOf(delta) {
+  const shown = roundDelta(delta);
+  if (shown === null) return null;
+  if (shown > 0) return 'up';
+  return shown < 0 ? 'down' : 'flat';
 }
 
 export function groupBy(ratings, select) {
