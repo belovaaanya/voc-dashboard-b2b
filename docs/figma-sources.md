@@ -1,0 +1,76 @@
+# Источники в Figma
+
+Файл: **«[D] дашборд VOC для PO B2B»**
+File key: `2F1TCDIlnTC0qcbm9ounsb`
+
+| Что | Node ID | Ссылка |
+| --- | --- | --- |
+| Доска целиком (макеты + спецификация + приоритеты) | `2005:1210` | [открыть](https://www.figma.com/design/2F1TCDIlnTC0qcbm9ounsb/-D--%D0%B4%D0%B0%D1%88%D0%B1%D0%BE%D1%80%D0%B4-VOC-%D0%B4%D0%BB%D1%8F-PO-B2B?node-id=2005-1210) |
+| Референсный wireframe `Desktop: wireframe` (`1600 × 1342`) | `3204:2682` | [открыть](https://www.figma.com/design/2F1TCDIlnTC0qcbm9ounsb/-D--%D0%B4%D0%B0%D1%88%D0%B1%D0%BE%D1%80%D0%B4-VOC-%D0%B4%D0%BB%D1%8F-PO-B2B?node-id=3204-2682) |
+
+Доска `2005:1210` — `9684 × 8662`, помимо wireframe содержит несколько
+визуальных вариантов дашборда, текстовую спецификацию (10 разделов) и блок
+приоритетов P0/P1/P2. Из неё собраны
+[requirements.md](requirements.md).
+
+---
+
+## Локальная копия референса
+
+[`design/reference/desktop-wireframe.png`](design/reference/desktop-wireframe.png)
+— экспорт `3204:2682` в масштабе 1:1.
+
+Копия лежит в репозитории намеренно: она нужна для сверки вёрстки и code
+review без доступа к Figma, а ссылки на ассеты, которые отдаёт Figma MCP,
+живут около недели и не годятся для коммита.
+
+---
+
+## Доступ
+
+Read-инструменты Figma MCP (`get_design_context`, `get_metadata`,
+`get_variable_defs`, `get_screenshot`) работают только при **edit-доступе к
+файлу**: они отдают ту же информацию, что Dev Mode inspect, а для viewer этот
+слой закрыт. При view-доступе любой вызов падает с
+`Looks like you don't have edit access to this file`.
+
+Проверить, под каким аккаунтом подключён MCP, и какие у него seats: `whoami`.
+
+---
+
+## Как перечитать макет
+
+```
+get_metadata      fileKey=2F1TCDIlnTC0qcbm9ounsb  nodeId=3204:2682
+get_design_context fileKey=2F1TCDIlnTC0qcbm9ounsb  nodeId=<узел блока>
+get_screenshot    fileKey=2F1TCDIlnTC0qcbm9ounsb  nodeId=<узел блока>
+```
+
+- `get_metadata` даёт дерево с ID, именами, позициями и размерами — по нему
+  сняты замеры в [design-spec.md](design-spec.md) и найдены расхождения в
+  [design-validation.md](design-validation.md);
+- `get_design_context` тянуть **на узел блока, а не на весь артборд**: для
+  `3204:2682` ответ слишком большой;
+- перед `get_design_context` обязателен skill `figma-design-to-code`.
+
+Полезные узлы для точечных запросов:
+
+| Блок | Node ID |
+| --- | --- |
+| Шапка: канал + фильтры | `3204:2685` |
+| Строка метрик | `3204:2723` |
+| `MetricCell/Big` | `3204:2724` |
+| `MetricCell/Small` | `3204:2738` |
+| Панель «Главный вывод» | `3204:2849` |
+| Карточка «Динамика VOC» | `3204:2865` |
+| Карточка «Антидрайверы» (heatmap) | `3204:3029` |
+| Правая колонка: события / инсайты | `3204:3049` |
+
+---
+
+## Токены
+
+`get_variable_defs` на `3204:2682` возвращает `{}` — Figma-переменные к макету
+не привязаны, слоя токенов в файле нет. Палитра в
+[design-spec.md](design-spec.md#5-палитра) снята из экспортированного PNG;
+шкала токенов проектируется на нашей стороне.

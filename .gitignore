@@ -1,0 +1,12 @@
+.DS_Store
+
+# генерируется из data/*.xlsx конвертером, source of truth — xlsx
+site/data/
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+node_modules/
+dist/
