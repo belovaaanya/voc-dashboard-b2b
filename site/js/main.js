@@ -15,12 +15,14 @@ import { renderVocChannel } from './blocks/voc-channel.js';
 import { vocSegment } from './blocks/voc-segment.js';
 import { tally } from './blocks/tally.js';
 import { availableDimensions, channelsOf } from './dimensions.js';
+import { periodFromState } from './controls.js';
 import { renderHeader } from './header.js';
 import { createLabels } from './labels.js';
 import { hasRole, loadRatings, loadReference, loadSource } from './loader.js';
 import { groupBy } from './metrics.js';
-import { customPeriod, defaultPeriod, previousPeriod } from './period.js';
-import { onStateChange, readState, syncState, toSearch, writeState } from './url-state.js';
+import { defaultPeriod } from './period.js';
+import { createSelector } from './selection.js';
+import { onStateChange, readState, syncState, toSearch, withFilter, writeState } from './url-state.js';
 
 const NEXT_SLICE = 'Блок появится в следующем слайсе — здесь только каркас.';
 
@@ -37,26 +39,6 @@ const BLOCKS = [
   { id: 'antidrivers', title: 'Антидрайверы', host: 'main' },
   { id: 'insights', title: 'Инсайты', host: 'rail-main' },
 ];
-
-function matchesFilters(row, state, dimensions, reference) {
-  for (const dimension of dimensions) {
-    const selected = state.filters?.[dimension.key];
-    if (!selected?.length) continue;
-    const values = dimension.values(row, reference).filter(Boolean);
-    if (!values.some((value) => selected.includes(value))) return false;
-  }
-  return true;
-}
-
-function sliceRows(rows, state, period, dimensions, reference) {
-  return rows.filter(
-    (row) =>
-      (!state.channel || row.channel === state.channel) &&
-      row.appeal_date >= period.from &&
-      row.appeal_date <= period.to &&
-      matchesFilters(row, state, dimensions, reference),
-  );
-}
 
 /* Порядок сегментных карточек — по числу оценок: крупный сегмент идёт первым, как в макете (D-01) */
 function segmentsByVolume(rows) {
@@ -107,25 +89,18 @@ function main() {
       const fallbackPeriod = defaultPeriod(source.manifest.period);
 
       function render(requested) {
-        const period =
-          requested.from && requested.to ? customPeriod(requested.from, requested.to) : fallbackPeriod;
+        const period = periodFromState(requested, fallbackPeriod, source.manifest.period);
         const state = {
           ...requested,
           channel: requested.channel && channels.includes(requested.channel) ? requested.channel : channels[0] ?? null,
+          preset: period.preset,
           from: period.from,
           to: period.to,
         };
         /* Достроенное по умолчанию состояние дописывается в URL: пересланная ссылка обязана быть полной (D-31) */
         if (toSearch(state) !== toSearch(requested)) syncState(state);
 
-        const previous = previousPeriod(period);
-        const select = (overrides = {}) => {
-          const merged = { ...state, ...overrides };
-          return {
-            rows: sliceRows(rows, merged, period, dimensions, reference),
-            previous: sliceRows(rows, merged, previous, dimensions, reference),
-          };
-        };
+        const select = createSelector({ rows, state, period, dimensions, reference });
         const current = select();
 
         const setState = (next) => {
@@ -139,7 +114,7 @@ function main() {
           previousSlice: current.previous,
           state,
           period,
-          previousPeriod: previous,
+          previousPeriod: current.previousPeriod,
           reference,
           label,
           dimensions,
@@ -159,6 +134,10 @@ function main() {
           dataError: source.dataError,
           rowsInSlice: context.slice.length,
           onChannelChange: (channel) => setState({ ...state, channel }),
+          onPeriodChange: (nextPeriod) =>
+            setState({ ...state, preset: nextPeriod.preset, from: nextPeriod.from, to: nextPeriod.to }),
+          onFilterChange: (dimension, values) =>
+            setState({ ...state, filters: withFilter(state.filters, dimension, values) }),
         });
 
         for (const spec of BLOCKS) {

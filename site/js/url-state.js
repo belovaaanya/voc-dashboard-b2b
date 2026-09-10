@@ -4,12 +4,15 @@
 */
 
 import { DIMENSIONS } from './dimensions.js';
+import { PRESETS } from './period.js';
 
 const PARAM_CHANNEL = 'channel';
+const PARAM_PRESET = 'preset';
 const PARAM_FROM = 'from';
 const PARAM_TO = 'to';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const VALID_PRESETS = new Set([...PRESETS, 'custom']);
 
 function readDate(params, name) {
   const value = params.get(name);
@@ -18,6 +21,7 @@ function readDate(params, name) {
 
 export function readState(search = window.location.search) {
   const params = new URLSearchParams(search);
+  const preset = params.get(PARAM_PRESET);
   const filters = {};
   for (const dimension of DIMENSIONS) {
     const raw = params.get(dimension.key);
@@ -26,6 +30,7 @@ export function readState(search = window.location.search) {
   }
   return {
     channel: params.get(PARAM_CHANNEL) || null,
+    preset: VALID_PRESETS.has(preset) ? preset : null,
     from: readDate(params, PARAM_FROM),
     to: readDate(params, PARAM_TO),
     filters,
@@ -35,6 +40,7 @@ export function readState(search = window.location.search) {
 export function toSearch(state) {
   const params = new URLSearchParams();
   if (state.channel) params.set(PARAM_CHANNEL, state.channel);
+  if (VALID_PRESETS.has(state.preset)) params.set(PARAM_PRESET, state.preset);
   if (state.from) params.set(PARAM_FROM, state.from);
   if (state.to) params.set(PARAM_TO, state.to);
   for (const dimension of DIMENSIONS) {
