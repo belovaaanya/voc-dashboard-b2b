@@ -16,6 +16,7 @@ DOM, загрузку данных и форматирование строк я
 | [`site/js/plan.js`](../site/js/plan.js) | плановый коридор: какая запись описывает срез и как читается бейдж | `D-04`, `D-22`, `D-42` |
 | [`site/js/timeseries.js`](../site/js/timeseries.js) | интервалы day/week/month/quarter и VOC временного ряда | `D-07`, `D-23`, `D-24` |
 | [`site/js/chart-geometry.js`](../site/js/chart-geometry.js) | чистая геометрия SVG: шкала, точки, линии и разрывы | `V-05`, `V-06`, `V-12` |
+| [`site/js/antidrivers.js`](../site/js/antidrivers.js) | отрицательный рейтинг, fallback без антидрайверов и данные heatmap | `D-10`, `D-27`, `V-18` |
 | [`site/js/sufficiency.js`](../site/js/sufficiency.js) | достаточность выборки | `D-25` |
 | [`site/js/round.js`](../site/js/round.js) | округление на выводе | `D-21` |
 

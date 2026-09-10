@@ -13,6 +13,7 @@
 import { EMPTY, ERROR, LOADING, READY, createBlock } from './block.js';
 import { renderVocChannel } from './blocks/voc-channel.js';
 import { renderDynamics } from './blocks/dynamics.js';
+import { renderAntidrivers } from './blocks/antidrivers.js';
 import { vocSegment } from './blocks/voc-segment.js';
 import { tally } from './blocks/tally.js';
 import { availableDimensions, channelsOf } from './dimensions.js';
@@ -37,7 +38,7 @@ const BLOCKS = [
   { id: 'share-5', title: 'Доля 5★', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('share5') },
   { id: 'summary', title: 'Главный вывод', host: 'rail-top' },
   { id: 'dynamics', title: 'Динамика VOC', host: 'main', modifier: 'card--dynamics', render: renderDynamics },
-  { id: 'antidrivers', title: 'Антидрайверы', host: 'main' },
+  { id: 'antidrivers', title: 'Антидрайверы', host: 'main', modifier: 'card--antidrivers', render: renderAntidrivers },
   { id: 'insights', title: 'Инсайты', host: 'rail-main' },
 ];
 
