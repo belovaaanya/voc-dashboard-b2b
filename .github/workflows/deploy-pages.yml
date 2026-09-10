@@ -25,6 +25,18 @@ jobs:
 
       - uses: actions/configure-pages@v6
 
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r tools/requirements.txt
+
+      # Непротиворечивость выгрузки проверяется до публикации: расхождение с
+      # ориентирами карточек дешевле поймать здесь, чем в браузере.
+      - run: python tools/check_data.py
+
+      - run: python tools/xlsx_to_json.py
+
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
