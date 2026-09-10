@@ -6,7 +6,8 @@
 — в [blocks-dynamics](blocks-dynamics.md), рейтинг и heatmap — в
 [blocks-antidrivers](blocks-antidrivers.md), инсайты — в
 [blocks-insights](blocks-insights.md), распределение — в
-[blocks-distribution](blocks-distribution.md), прямая речь — в своём слайсе.
+[blocks-distribution](blocks-distribution.md), главный вывод — в
+[blocks-conclusion](blocks-conclusion.md), прямая речь — в своём слайсе.
 
 Связанные документы: [design-spec](design-spec.md) (замеры и палитра),
 [design-validation](design-validation.md) (`V-xx`), [decisions](decisions.md)
@@ -35,6 +36,7 @@ site/
 ├── js/antidrivers.js     рейтинг вклада и матрица по времени
 ├── js/insights.js        дневные изменения VOC и их причины
 ├── js/distribution.js    доли 1–5 для вывода с согласованным округлением
+├── js/conclusions.js     сильнейшие факторы роста и снижения VOC
 ├── js/dimensions.js      список измерений и вывод их значений из данных
 ├── js/labels.js          подписи из справочника с fallback на код
 ├── js/block.js           карточка блока и три служебных состояния

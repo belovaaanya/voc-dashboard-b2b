@@ -16,6 +16,7 @@ import { renderDynamics } from './blocks/dynamics.js';
 import { renderAntidrivers } from './blocks/antidrivers.js';
 import { renderInsights } from './blocks/insights.js';
 import { renderDistribution } from './blocks/distribution.js';
+import { renderConclusion } from './blocks/conclusion.js';
 import { vocSegment } from './blocks/voc-segment.js';
 import { tally } from './blocks/tally.js';
 import { availableDimensions, channelsOf } from './dimensions.js';
@@ -38,7 +39,7 @@ const BLOCKS = [
   { id: 'ratings-count', title: 'Оценок', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('count') },
   { id: 'low-ratings', title: 'Низких оценок', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('lowCount') },
   { id: 'share-5', title: 'Доля 5★', host: 'metrics', modifier: 'card--metric card--metric-tally', render: tally('share5') },
-  { id: 'summary', title: 'Главный вывод', host: 'rail-top' },
+  { id: 'summary', title: 'Главный вывод', host: 'rail-top', modifier: 'card--summary', render: renderConclusion },
   { id: 'distribution', title: 'Распределение оценок', host: 'rail-top', modifier: 'card--distribution', render: renderDistribution },
   { id: 'dynamics', title: 'Динамика VOC', host: 'main', modifier: 'card--dynamics', render: renderDynamics },
   { id: 'antidrivers', title: 'Антидрайверы', host: 'main', modifier: 'card--antidrivers', render: renderAntidrivers },

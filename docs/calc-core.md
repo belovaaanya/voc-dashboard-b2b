@@ -19,6 +19,7 @@ DOM, загрузку данных и форматирование строк я
 | [`site/js/antidrivers.js`](../site/js/antidrivers.js) | отрицательный рейтинг, fallback без антидрайверов и данные heatmap | `D-10`, `D-27`, `V-18` |
 | [`site/js/insights.js`](../site/js/insights.js) | дневные изменения VOC, причины и сортировка инсайтов | `D-10`, `D-16`, `D-23`, `D-24` |
 | [`site/js/distribution.js`](../site/js/distribution.js) | распределение 1–5 с согласованными долями для вывода | `D-21`, `D-40`, `V-22` |
+| [`site/js/conclusions.js`](../site/js/conclusions.js) | сильнейшие положительные и отрицательные вклады | `D-10`, `V-16` |
 | [`site/js/sufficiency.js`](../site/js/sufficiency.js) | достаточность выборки | `D-25` |
 | [`site/js/round.js`](../site/js/round.js) | округление на выводе | `D-21` |
 
