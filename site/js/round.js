@@ -23,13 +23,20 @@ export function roundImpact(value) {
 }
 
 /**
- * Доли распределения — целые проценты, сумма ровно `100` (requirements 3.7).
- * Поэлементное округление даёт `99` или `101`, поэтому недостающие проценты
- * раздаются по наибольшему остатку.
+ * Доли распределения — целые проценты, сумма ровно `100` (requirements 3.7):
+ * поэлементное округление даёт `99` или `101`, поэтому недостающее раздаётся
+ * по наибольшему остатку. Входные доли обязаны давать `100` — иначе раздавать
+ * нечего, и функция об этом сообщает.
  */
 export function roundShares(shares) {
+  if (shares.length === 0) return [];
   if (shares.some((share) => share === null || share === undefined)) {
     return shares.map(() => null);
+  }
+
+  const exact = shares.reduce((sum, share) => sum + share, 0);
+  if (Math.abs(exact - 100) > 0.5) {
+    throw new Error(`Доли не дают 100 и раздать нечего: ${exact}`);
   }
 
   const rounded = shares.map((share) => Math.floor(share));
@@ -46,9 +53,10 @@ export function roundShares(shares) {
 }
 
 function round(value, digits) {
-  if (value === null || value === undefined) return null;
+  // round — последняя остановка перед DOM, поэтому NaN гасится здесь, а не на экране.
+  if (value === null || value === undefined || !Number.isFinite(value)) return null;
 
-  // toFixed округляет по десятичному представлению, Math.round — по двоичному.
+  // toFixed не добавляет своего шага умножения на 10^n, в отличие от Math.round.
   const rounded = Number(value.toFixed(digits));
   return rounded === 0 ? 0 : rounded;
 }

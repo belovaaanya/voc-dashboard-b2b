@@ -62,3 +62,15 @@ test('AC-7a roundShares WHEN the slice is empty SHOULD keep the shares undefined
 
   assert.deepEqual(roundShares(empty), [null, null, null, null, null]);
 });
+
+test('rounding WHEN the value is not finite SHOULD report no value instead of NaN on screen', () => {
+  assert.equal(roundVoc(NaN), null);
+  assert.equal(roundVoc(Infinity), null);
+  assert.equal(roundDelta(-Infinity), null);
+  assert.equal(roundImpact(NaN), null);
+});
+
+test('roundShares WHEN the shares do not add up to 100 SHOULD refuse instead of inventing a total', () => {
+  assert.throws(() => roundShares([10, 20]), /100/);
+  assert.deepEqual(roundShares([]), []);
+});
