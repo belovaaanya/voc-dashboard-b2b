@@ -14,6 +14,7 @@ Figma, данные — из файлов рядом с сайтом, backend н
 | [docs/data-model.md](docs/data-model.md) | структура выгрузки, расчёты, подводные камни |
 | [docs/ui-shell.md](docs/ui-shell.md) | каркас: токены, сетка, загрузка, состояния, URL |
 | [docs/figma-sources.md](docs/figma-sources.md) | node ID, как перечитать макет |
+| [docs/calc-core.md](docs/calc-core.md) | **перед правкой чисел** — модули расчётов, инварианты, методика вклада |
 | [docs/slice-gate.md](docs/slice-gate.md) | проверка в конце слайса |
 
 ## Макет — источник композиции, не значений
