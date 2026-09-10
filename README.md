@@ -16,14 +16,16 @@
 | Документ | О чём |
 | --- | --- |
 | [docs/requirements.md](docs/requirements.md) | Что должен делать дашборд, приоритеты P0/P1/P2, открытые вопросы |
-| [docs/design-validation.md](docs/design-validation.md) | Где макет нельзя воспроизводить и что делать вместо этого |
+| [docs/decisions.md](docs/decisions.md) | Решения по умолчанию (`D-xx`) с условиями пересмотра |
+| [docs/design-validation.md](docs/design-validation.md) | Где макет нельзя воспроизводить и что делать вместо этого (`V-xx`) |
 | [docs/design-spec.md](docs/design-spec.md) | Замеры сетки и блоков, палитра |
-| [docs/data-model.md](docs/data-model.md) | Схема листов xlsx, формат JSON, требования к тестовым данным |
+| [docs/data-model.md](docs/data-model.md) | Структура выгрузки, что из чего считается, подводные камни |
 | [docs/figma-sources.md](docs/figma-sources.md) | Node ID, доступы, как перечитать макет |
+| [docs/slice-gate.md](docs/slice-gate.md) | Проверка в конце каждого слайса |
 | [CLAUDE.md](CLAUDE.md) | Рабочие правила репозитория |
 
 Начинать чтение с `requirements.md`, перед вёрсткой любого блока —
-`design-validation.md`.
+`design-validation.md` и `decisions.md`.
 
 ---
 

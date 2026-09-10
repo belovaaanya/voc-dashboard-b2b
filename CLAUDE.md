@@ -8,10 +8,12 @@ Figma, данные — из файлов рядом с сайтом, backend н
 | Документ | Когда нужен |
 | --- | --- |
 | [docs/requirements.md](docs/requirements.md) | что делать, приоритеты, открытые вопросы |
-| [docs/design-validation.md](docs/design-validation.md) | **перед вёрсткой любого блока** |
+| [docs/decisions.md](docs/decisions.md) | **перед вёрсткой любого блока** — решения `D-xx` по вопросам без ответа заказчика |
+| [docs/design-validation.md](docs/design-validation.md) | **перед вёрсткой любого блока** — расхождения макета `V-xx` |
 | [docs/design-spec.md](docs/design-spec.md) | замеры сетки и блоков, палитра |
-| [docs/data-model.md](docs/data-model.md) | схема листов, формат JSON |
+| [docs/data-model.md](docs/data-model.md) | структура выгрузки, расчёты, подводные камни |
 | [docs/figma-sources.md](docs/figma-sources.md) | node ID, как перечитать макет |
+| [docs/slice-gate.md](docs/slice-gate.md) | проверка в конце слайса |
 
 ## Макет — источник композиции, не значений
 
