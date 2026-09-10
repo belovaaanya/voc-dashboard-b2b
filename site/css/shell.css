@@ -232,6 +232,12 @@ body {
   background: var(--color-surface);
 }
 
+.filters__item {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
 .filters__control {
   display: inline-flex;
   align-items: center;
@@ -244,6 +250,17 @@ body {
   color: var(--color-text-secondary);
   font: inherit;
   cursor: pointer;
+}
+
+.filters__control[aria-expanded='true'] {
+  background: var(--color-surface-sunken);
+  box-shadow: inset 0 0 0 var(--divider-width) var(--color-border-strong);
+}
+
+.filters__control:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-strong);
+  box-shadow: inset 0 0 0 var(--divider-width) var(--color-border-strong);
 }
 
 .filters__control-label {
@@ -262,9 +279,28 @@ body {
   font-weight: var(--weight-medium);
 }
 
-.filters__control[aria-pressed="true"] {
+.filters__control[data-active='true'] {
   color: var(--color-text-strong);
   text-decoration: underline;
+  text-decoration-thickness: var(--divider-width);
+  text-underline-offset: var(--space-1);
+}
+
+.filters__calendar-icon {
+  position: relative;
+  flex: 0 0 var(--space-3);
+  width: var(--space-3);
+  height: var(--space-3);
+  border: var(--divider-width) solid currentcolor;
+  border-radius: var(--space-1);
+}
+
+.filters__calendar-icon::before {
+  content: '';
+  position: absolute;
+  inset-inline: calc(-1 * var(--divider-width));
+  top: var(--space-1);
+  border-top: var(--divider-width) solid currentcolor;
 }
 
 /* Разделитель декоративный: без содержимого и без имени в a11y-дереве (V-04) */
@@ -273,6 +309,155 @@ body {
   width: var(--divider-width);
   height: var(--space-4);
   background: var(--color-border-strong);
+}
+
+.control-popover {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--space-2));
+  inset-inline-start: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: calc(var(--space-10) * 7);
+  padding: var(--space-4);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: 0 var(--space-4) var(--space-10) var(--color-bg);
+}
+
+.control-popover[hidden] {
+  display: none;
+}
+
+.control-popover--period {
+  width: calc(var(--space-10) * 9);
+}
+
+.control-popover__title,
+.control-popover__subtitle {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.control-popover__title {
+  font-size: var(--text-lg);
+}
+
+.control-popover__subtitle {
+  font-size: var(--text-sm);
+}
+
+.control-popover__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.control-popover__preset,
+.control-popover__apply,
+.control-popover__reset {
+  padding: var(--space-2) var(--space-3);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.control-popover__apply {
+  background: var(--color-positive-fill);
+  color: var(--color-on-accent);
+  font-weight: var(--weight-medium);
+}
+
+.control-popover__preset:hover,
+.control-popover__reset:hover {
+  border-color: var(--color-positive);
+  color: var(--color-text-strong);
+}
+
+.control-popover__apply:hover {
+  box-shadow: inset 0 0 0 var(--divider-width) var(--color-on-accent);
+}
+
+.control-popover__custom,
+.control-popover__field,
+.control-popover__choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.control-popover__fields,
+.control-popover__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.control-popover__field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.control-popover__field-label {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.control-popover__date {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  color-scheme: dark;
+  font: inherit;
+}
+
+.control-popover__choices {
+  max-height: calc(var(--space-10) * 8);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+}
+
+.control-popover__option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.control-popover__option:hover {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+
+.control-popover__checkbox {
+  flex: 0 0 auto;
+  margin: var(--space-1) 0 0;
+  accent-color: var(--color-positive-fill);
+}
+
+.control-popover__actions {
+  justify-content: flex-end;
+}
+
+.control-popover__error {
+  margin: 0;
+  color: var(--color-negative);
+  font-size: var(--text-xs);
 }
 
 /* ── Источник данных ──────────────────────────────────────────────── */

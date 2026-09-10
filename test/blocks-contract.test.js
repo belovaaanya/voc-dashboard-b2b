@@ -59,6 +59,11 @@ test('AC-1 каркас не считает метрики сам: расчёт�
   }
 });
 
+test('AC-6 выборка global/local period живёт в selection.js, а не дублируется в каркасе', () => {
+  assert.match(MAIN, /import \{ createSelector \} from '\.\/selection\.js';/);
+  assert.doesNotMatch(MAIN, /function (matchesFilters|sliceRows)\b/);
+});
+
 test('AC-3 контекст несёт все обязательные поля контракта', () => {
   const literal = MAIN.slice(MAIN.indexOf('const context = {'), MAIN.indexOf('};', MAIN.indexOf('const context = {')));
 
@@ -75,6 +80,13 @@ test('AC-5 состав контекста описан в docs/ui-shell.md — 
       `поле контекста ${key} не описано в таблице контракта ui-shell.md`,
     );
   }
+});
+
+test('AC-6 результат select документирует effective local period и его сравнение', () => {
+  assert.match(
+    CONTRACT_DOC,
+    /`select` \| `\(overrides\) => \{ rows, previous, period, previousPeriod \}`/,
+  );
 });
 
 test('AC-4 реестр — плоский список по строке на блок: добавление блока не трогает соседей', () => {
