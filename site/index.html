@@ -11,27 +11,37 @@
     --text: #E1E1E1;
     --text-dim: #A4A4A5;
     --accent: #2DDA93;
+    --gap: 12px;
+    --pad: 16px;
   }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
+    padding: 40px 24px;
     background: var(--bg);
     color: var(--text);
     font: 14px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
   }
-  main {
-    max-width: 34rem;
-    padding: 2.5rem;
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
+  .card {
+    padding: var(--pad);
     border-radius: 16px;
     background: var(--surface);
   }
-  h1 { margin: 0 0 .5rem; font-size: 1.25rem; font-weight: 500; }
-  p { margin: 0 0 1rem; color: var(--text-dim); }
+  h1 { margin: 0 0 .25rem; font-size: 1.25rem; font-weight: 500; }
+  h2 { margin: 0 0 .5rem; font-size: 1rem; font-weight: 500; }
+  p { margin: 0 0 .75rem; color: var(--text-dim); }
+  p:last-child { margin-bottom: 0; }
+  ul { margin: 0; padding-left: 1.25rem; color: var(--text-dim); }
   .tag {
     display: inline-block;
-    margin-bottom: 1.25rem;
+    margin-bottom: .75rem;
     padding: .25rem .625rem;
     border: 1px solid var(--accent);
     border-radius: 999px;
@@ -41,14 +51,31 @@
 </style>
 </head>
 <body>
-  <main>
-    <span class="tag">В разработке</span>
-    <h1>Дашборд VOC для PO B2B</h1>
-    <p>
-      Требования и дизайн-спека собраны, вёрстка не начата. Страница
-      подтверждает, что deploy на GitHub Pages проходит.
-    </p>
-    <p>Текущее состояние — <code>PROGRESS.md</code> в репозитории.</p>
-  </main>
+  <div class="page">
+    <header class="card">
+      <span class="tag">В разработке</span>
+      <h1>Дашборд VOC для PO B2B</h1>
+      <p>
+        Требования и дизайн-спека собраны, вёрстка блоков не начата.
+        Страница подтверждает, что deploy на GitHub Pages проходит.
+      </p>
+      <p>Текущее состояние — <code>PROGRESS.md</code> в репозитории.</p>
+    </header>
+
+    <section class="card">
+      <h2>Что здесь будет</h2>
+      <p>
+        Обычная скроллящаяся страница: блоки дашборда идут потоком в
+        контентной колонке 1400 и растут по содержимому.
+      </p>
+      <ul>
+        <li>шапка: канал и сквозные фильтры периода;</li>
+        <li>ключевые метрики VOC по сегментам;</li>
+        <li>динамика VOC с плановым коридором и объёмом выборки;</li>
+        <li>антидрайверы: рейтинг, по раскрытию — тепловая карта;</li>
+        <li>инсайты, связанные с графиком и событиями.</li>
+      </ul>
+    </section>
+  </div>
 </body>
 </html>
