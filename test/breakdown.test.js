@@ -174,3 +174,41 @@ test('breakdown SHOULD order groups by weight, then by key, so rendering is stab
     ['Запрос выписки', 'Отправка платежа', 'Экспорт выписки'],
   );
 });
+
+test('breakdown WHEN a rating carries no voc_ccode SHOULD fail loudly instead of merging ratings', () => {
+  const slice = [
+    { mark: 5, operations: ['Выписка'] },
+    { mark: 1, operations: ['Выписка'] },
+  ];
+
+  assert.throws(() => breakdown(slice, byOperations), /voc_ccode/);
+  assert.throws(
+    () => breakdown([rating({ voc_ccode: '' })], byOperations),
+    /voc_ccode/,
+  );
+});
+
+test('breakdown SHOULD deduplicate inside the unlabelled group as well', () => {
+  const slice = [
+    rating({ mark: 1, operations: [null, ''] }),
+    rating({ mark: 5, operations: [] }),
+  ];
+
+  const [unlabelled] = breakdown(slice, byOperations);
+
+  assert.equal(unlabelled.key, UNLABELLED);
+  assert.equal(unlabelled.mentions, 2, 'две оценки, а не три пустых ключа');
+  assert.equal(unlabelled.voc, 3);
+  assertReconcilesToSliceVoc([unlabelled], slice);
+});
+
+test('breakdown SHOULD order equal-weight groups by ru collation, not by code unit', () => {
+  const slice = ['Ёмкость', 'Яблоко', 'аванс', 'Банк'].map((operation) =>
+    rating({ mark: 4, operations: [operation] }),
+  );
+
+  assert.deepEqual(
+    breakdown(slice, byOperations).map(({ key }) => key),
+    ['аванс', 'Банк', 'Ёмкость', 'Яблоко'],
+  );
+});

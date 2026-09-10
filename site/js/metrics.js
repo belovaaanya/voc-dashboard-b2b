@@ -1,17 +1,13 @@
 /**
- * Базовые агрегации по оценкам (`D-07`).
+ * Базовые агрегации по оценкам (`D-07`, `D-15`) — методика в `docs/calc-core.md` §3.
  *
- * Грань факта — одна оценка (`docs/data-model.md` §2), поэтому любой показатель
- * среза считается по оценкам и никогда по уже посчитанным средним.
- *
- * Возвращаемые числа — полной точности, округление только на выводе (`D-21`).
- * Там, где значение на срезе не определено (пустой срез), возвращается `null`,
- * а не `0` и не `NaN`: `0` — это ответ, а не отсутствие ответа.
+ * Неопределённое на срезе значение — `null`, а не `0`: ноль это ответ, а не его
+ * отсутствие. Числа полной точности, округление на выводе (`D-21`).
  */
 
 export const MARKS = [1, 2, 3, 4, 5];
 
-/** Низкая оценка — `MARK1_VALUE <= 2` (`docs/data-model.md` §4). */
+/** `docs/data-model.md` §4. */
 export const LOW_MARK_MAX = 2;
 
 export function voc(ratings) {
@@ -63,7 +59,11 @@ export function summarize(ratings) {
   };
 }
 
-function compareKeys(left, right) {
+/** Порядок групп для вывода: `ru`, иначе `Ё` встанет перед `А`, а строчные — после всех прописных. */
+export function compareKeys(left, right) {
+  if (typeof left === 'string' && typeof right === 'string') {
+    return left.localeCompare(right, 'ru');
+  }
   if (left < right) return -1;
   return left > right ? 1 : 0;
 }

@@ -6,7 +6,7 @@
  * падать. Инвариант, который никогда не падал, ничего не доказывает.
  */
 
-import { voc, ratingCount } from '../../site/js/metrics.js';
+import { voc } from '../../site/js/metrics.js';
 import { dayCount } from '../../site/js/period.js';
 
 const TOLERANCE = 1e-12;
@@ -31,20 +31,10 @@ export function assertReconcilesToSliceVoc(groups, slice, tolerance = TOLERANCE)
 /** `D-08`: дробное отнесение сохраняет аддитивность разреза. */
 export function assertWeightSumsToRatingCount(groups, slice, tolerance = TOLERANCE) {
   const weight = groups.reduce((sum, group) => sum + group.weightedCount, 0);
-  const expected = ratingCount(slice);
+  const expected = slice.length;
 
   if (Math.abs(weight - expected) > tolerance) {
     throw new Error(`Сумма веса разреза ${weight} не равна числу оценок ${expected}`);
-  }
-}
-
-/** `D-09`: целое отнесение не может дать меньше упоминаний, чем есть оценок. */
-export function assertMentionsCoverSlice(groups, slice) {
-  const mentions = groups.reduce((sum, group) => sum + group.mentions, 0);
-  const expected = ratingCount(slice);
-
-  if (mentions < expected) {
-    throw new Error(`Упоминаний ${mentions} меньше, чем оценок ${expected}`);
   }
 }
 
@@ -150,5 +140,25 @@ export function assertDisplayDigits(roundOf, digits, sample = 1.23456789) {
 
   if (actual > digits) {
     throw new Error(`${rounded}: знаков ${actual}, разрешено ${digits}`);
+  }
+}
+
+/**
+ * `D-10`: сравнение периодов обязано быть антисимметричным — «май к апрелю»
+ * даёт ровно минус «апрель к маю». Инвариант держит именно точку отсчёта:
+ * односторонняя (VOC любого из периодов) антисимметрию ломает, а сумма вкладов
+ * этого не видит.
+ */
+export function assertTimeSymmetric(decomposeOf, previous, current, project, tolerance = 1e-12) {
+  const forward = decomposeOf(previous, current, project);
+  const backward = decomposeOf(current, previous, project);
+  const mirrored = new Map(backward.contributions.map((item) => [item.key, item.impact]));
+
+  for (const { key, impact } of forward.contributions) {
+    const back = mirrored.get(key);
+
+    if (Math.abs(impact + back) > tolerance) {
+      throw new Error(`${key}: вклад ${impact} против ${back} при обратном сравнении`);
+    }
   }
 }

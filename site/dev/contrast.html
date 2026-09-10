@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Контраст токенов — самопроверка</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  body {
+    margin: 0;
+    padding: var(--space-10) var(--space-6);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: var(--weight-normal) var(--text-md) / var(--leading-normal) var(--font-sans);
+  }
+  h1 { font-size: var(--text-xl); font-weight: var(--weight-medium); }
+  p { max-width: 80ch; color: var(--color-text-secondary); }
+  table { border-collapse: collapse; margin-top: var(--space-6); }
+  th, td { padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: left; }
+  th { color: var(--color-text-tertiary); font-size: var(--text-xs); font-weight: var(--weight-normal); }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  .pass { color: var(--color-positive); }
+  .fail { color: var(--color-negative); }
+  .control { color: var(--color-text-tertiary); }
+  #summary { margin-top: var(--space-6); font-size: var(--text-lg); }
+</style>
+</head>
+<body>
+  <h1>Контраст токенов — самопроверка</h1>
+  <p>
+    Значения читаются из живых токенов <code>css/tokens.css</code>, поэтому
+    страница не может разойтись с реализацией: изменили токен — изменился
+    вердикт. Порог — WCAG AA: 4.5:1 для обычного текста, 3:1 для крупного
+    (решение D-28).
+  </p>
+  <p>
+    Последняя строка таблицы — positive control: пара с заведомо низким
+    контрастом. Если она показывает PASS, сломана сама проверка.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Текст</th><th>Фон</th><th>Где</th><th>Порог</th><th>Ratio</th><th>Вердикт</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <p id="summary"></p>
+
+<script type="module">
+const PAIRS = [
+  ['--color-text-strong', '--color-surface', 'значения метрик', 3],
+  ['--color-text-strong', '--color-surface-sunken', 'активный таб, контрол периода', 4.5],
+  ['--color-text', '--color-bg', 'основной текст', 4.5],
+  ['--color-text', '--color-surface', 'заголовки блоков', 4.5],
+  ['--color-text-secondary', '--color-surface', 'подписи фильтров, состояния', 4.5],
+  ['--color-text-secondary', '--color-surface-sunken', 'подписи во вложенных панелях', 4.5],
+  ['--color-text-tertiary', '--color-bg', 'служебные подписи шапки', 4.5],
+  ['--color-text-tertiary', '--color-surface', 'подписи осей, примечания', 4.5],
+  ['--color-positive', '--color-surface', 'положительная дельта', 4.5],
+  ['--color-negative', '--color-surface', 'отрицательная дельта, ошибка', 4.5],
+  ['--color-negative', '--color-bg', 'пометка демо-данных', 4.5],
+  ['--color-on-accent', '--color-positive-fill', 'текст на бейдже «В плане»', 4.5],
+  ['--color-on-accent', '--color-negative', 'текст на теге аварии', 4.5],
+  ['--color-border', '--color-bg', 'positive control: заведомый FAIL', 4.5],
+];
+
+const styles = getComputedStyle(document.documentElement);
+
+function parseColor(value) {
+  const probe = document.createElement('span');
+  probe.style.color = value;
+  document.body.append(probe);
+  const rgb = getComputedStyle(probe).color.match(/\d+/g).slice(0, 3).map(Number);
+  probe.remove();
+  return rgb;
+}
+
+const linear = (c) => (c / 255 <= 0.04045 ? c / 255 / 12.92 : ((c / 255 + 0.055) / 1.055) ** 2.4);
+const luminance = ([r, g, b]) => 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+
+function ratio(fg, bg) {
+  const a = luminance(parseColor(fg));
+  const b = luminance(parseColor(bg));
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+const tbody = document.getElementById('rows');
+let failures = 0;
+let controlCaught = false;
+
+for (const [fgToken, bgToken, where, threshold] of PAIRS) {
+  const fg = styles.getPropertyValue(fgToken).trim();
+  const bg = styles.getPropertyValue(bgToken).trim();
+  const value = ratio(fg, bg);
+  const ok = value >= threshold;
+  const isControl = where.startsWith('positive control');
+  if (!ok && isControl) controlCaught = true;
+  if (!ok && !isControl) failures += 1;
+
+  const row = document.createElement('tr');
+  if (isControl) row.className = 'control';
+  row.innerHTML =
+    `<td><code>${fgToken}</code> ${fg}</td>` +
+    `<td><code>${bgToken}</code> ${bg}</td>` +
+    `<td>${where}</td>` +
+    `<td class="num">${threshold}:1</td>` +
+    `<td class="num">${value.toFixed(2)}</td>` +
+    `<td class="${ok ? 'pass' : 'fail'}">${ok ? 'PASS' : 'FAIL'}</td>`;
+  tbody.append(row);
+}
+
+const summary = document.getElementById('summary');
+summary.textContent = !controlCaught
+  ? 'СЛОМАНА ПРОВЕРКА: positive control не дал FAIL'
+  : failures === 0
+    ? `Все ${PAIRS.length - 1} рабочих пар проходят AA; positive control ожидаемо FAIL`
+    : `Пар ниже порога: ${failures}`;
+summary.className = controlCaught && failures === 0 ? 'pass' : 'fail';
+</script>
+</body>
+</html>

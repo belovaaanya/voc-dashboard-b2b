@@ -14,11 +14,13 @@ const alternating = (count) =>
 test('AC-18 sampleSufficiency SHOULD return the mean, the interval and the half width', () => {
   const result = sampleSufficiency(ratingsWithMarks([1, 5]));
 
+  const halfWidth = 12.706 * 2;
+
   assert.equal(result.n, 2);
   assert.equal(result.mean, 3);
-  assert.ok(Math.abs(result.halfWidth - 3.92) < 1e-9, `полуширина ${result.halfWidth}`);
-  assert.ok(Math.abs(result.low - (3 - 3.92)) < 1e-9);
-  assert.ok(Math.abs(result.high - (3 + 3.92)) < 1e-9);
+  assert.ok(Math.abs(result.halfWidth - halfWidth) < 1e-9, `полуширина ${result.halfWidth}`);
+  assert.ok(Math.abs(result.low - (3 - halfWidth)) < 1e-9);
+  assert.ok(Math.abs(result.high - (3 + halfWidth)) < 1e-9);
   assert.equal(result.sufficient, false);
 });
 
@@ -30,8 +32,8 @@ test('AC-18 sampleSufficiency SHOULD accept a threshold that overrides the defau
   const ratings = ratingsWithMarks([1, 5]);
 
   assert.equal(sampleSufficiency(ratings).sufficient, false);
-  assert.equal(sampleSufficiency(ratings, 4).sufficient, true);
-  assert.equal(sampleSufficiency(ratings, 4).threshold, 4);
+  assert.equal(sampleSufficiency(ratings, 30).sufficient, true);
+  assert.equal(sampleSufficiency(ratings, 30).threshold, 30);
 });
 
 test('AC-18 sampleSufficiency SHOULD call a sample sufficient once the interval is tight enough', () => {
@@ -74,4 +76,29 @@ test('AC-19 sampleSufficiency WHEN the slice is empty SHOULD report no mean at a
   assert.equal(result.halfWidth, null);
   assert.equal(result.sufficient, false);
   assertNoNaN(result, 'sufficiency');
+});
+
+test('sampleSufficiency SHOULD widen the interval at small n, where a normal quantile would understate it', () => {
+  const two = sampleSufficiency(ratingsWithMarks([1, 5]));
+  const normalApproximation = (1.96 * Math.sqrt(8)) / Math.sqrt(2);
+
+  assert.ok(
+    two.halfWidth > normalApproximation * 6,
+    `t-квантиль обязан быть заметно шире нормального: ${two.halfWidth} против ${normalApproximation}`,
+  );
+});
+
+test('sampleSufficiency WHEN zero variance meets a minimum SHOULD stop claiming sufficiency', () => {
+  const identical = ratingsWithMarks([4, 4]);
+
+  assert.equal(
+    sampleSufficiency(identical).sufficient,
+    true,
+    'известная слабость правила через CI: нулевая дисперсия объявляет выборку достаточной',
+  );
+  assert.equal(
+    sampleSufficiency(identical, DEFAULT_PRECISION_THRESHOLD, 30).sufficient,
+    false,
+    'минимум оценок выключен по умолчанию и включается без правки кода',
+  );
 });

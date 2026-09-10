@@ -85,8 +85,13 @@ test('AC-23 decomposeVocChange WHEN a single rating is compared to a single rati
 test('AC-23 period WHEN the range is a single day SHOULD compare it to the day before', () => {
   const oneDay = customPeriod('2026-05-10', '2026-05-10');
 
+  const previous = previousPeriod(oneDay);
+
   assert.equal(dayCount(oneDay), 1);
-  assert.deepEqual(previousPeriod(oneDay), { from: '2026-05-09', to: '2026-05-09' });
+  assert.deepEqual({ from: previous.from, to: previous.to }, {
+    from: '2026-05-09',
+    to: '2026-05-09',
+  });
 });
 
 test('AC-23 period WHEN today is the first day of the month SHOULD give a one-day period', () => {
@@ -98,7 +103,11 @@ test('AC-23 period WHEN today is the first day of the month SHOULD give a one-da
     to: '2026-05-01',
     complete: false,
   });
-  assert.deepEqual(previousPeriod(period), { from: '2026-04-01', to: '2026-04-01' });
+  const previous = previousPeriod(period);
+  assert.deepEqual({ from: previous.from, to: previous.to }, {
+    from: '2026-04-01',
+    to: '2026-04-01',
+  });
 });
 
 test('AC-23 rounding WHEN the value is missing SHOULD stay missing', () => {

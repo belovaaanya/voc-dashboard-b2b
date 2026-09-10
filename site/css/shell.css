@@ -1,0 +1,304 @@
+/*
+  Каркас страницы: сетка, карточки, шапка, служебные состояния.
+  Цвет и размеры — только через токены из tokens.css.
+*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-bg);
+}
+
+body {
+  margin: 0;
+  /* Ниже --content-min страница скроллится по горизонтали, сетка не ломается (D-29) */
+  min-width: var(--content-min);
+  padding: var(--space-10) var(--space-6);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: var(--weight-normal) var(--text-md) / var(--leading-normal) var(--font-sans);
+}
+
+:focus-visible {
+  outline: var(--focus-ring) solid var(--color-positive);
+  outline-offset: 2px;
+}
+
+/* ── Сетка ─────────────────────────────────────────────────────────── */
+
+.page {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card);
+}
+
+/*
+  Обе контентные строки берут ширину рейла из одного токена, поэтому правые
+  края совпадают по построению, а колонки в сумме дают контентную ширину (V-01)
+*/
+.page-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--rail-width);
+  gap: var(--gap-card);
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card);
+  min-width: 0;
+}
+
+/* Пропорция большой карточки к малым — 356:216 из design-spec §3 */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) repeat(3, minmax(0, 1fr));
+  gap: var(--gap-card);
+  align-items: stretch;
+}
+
+/* ── Карточка ──────────────────────────────────────────────────────── */
+
+/*
+  Карточки в колонке растягиваются по контейнеру, поэтому внутри одной колонки
+  они одной ширины (V-03)
+*/
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--space-6);
+}
+
+.card__title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.card__note {
+  margin-inline-start: auto;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  /* Вертикального скролла внутри карточек нет: растёт страница (design-spec) */
+  overflow: visible;
+}
+
+.card--metric .card__title {
+  font-size: var(--text-lg);
+}
+
+/* ── Служебные состояния (D-34) ────────────────────────────────────── */
+
+.state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) 0;
+}
+
+.state__title {
+  color: var(--color-text-secondary);
+  font-size: var(--text-md);
+}
+
+.state__detail {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+/* Состояние ошибки несёт текст и знак, а не только цвет (D-26) */
+.state--error .state__title {
+  color: var(--color-negative);
+}
+
+.state__skeleton {
+  height: var(--space-5);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-sunken);
+}
+
+.state__skeleton + .state__skeleton {
+  margin-top: var(--space-2);
+  width: 60%;
+}
+
+.placeholder {
+  padding: var(--space-4) 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+/* ── Шапка ─────────────────────────────────────────────────────────── */
+
+.shell-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.shell-head__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.shell-head__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.channels {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+.channels__tab {
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-tertiary);
+  font: inherit;
+  cursor: pointer;
+}
+
+/*
+  Активный таб отличается не только цветом: он получает рамку и вес шрифта,
+  поэтому различим в grayscale (D-26)
+*/
+.channels__tab[aria-selected="true"] {
+  border: var(--divider-width) solid var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-strong);
+  font-weight: var(--weight-medium);
+}
+
+.filters {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) var(--space-3);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+.filters__control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 22ch;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.filters__control-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Период — главный элемент шапки (requirements 2.1) */
+.filters__control--period {
+  max-width: none;
+  border: var(--divider-width) solid var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-strong);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}
+
+.filters__control[aria-pressed="true"] {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+}
+
+/* Разделитель декоративный: без содержимого и без имени в a11y-дереве (V-04) */
+.filters__divider {
+  flex: 0 0 auto;
+  width: var(--divider-width);
+  height: var(--space-4);
+  background: var(--color-border-strong);
+}
+
+/* ── Источник данных ──────────────────────────────────────────────── */
+
+/*
+  Пометка демо-данных обязана быть явной: молчаливый fallback на фикстуру
+  маскирует сломанный pipeline
+*/
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+}
+
+.source-badge--demo {
+  border-color: var(--color-negative);
+  color: var(--color-negative);
+}
+
+.source-badge__mark {
+  font-weight: var(--weight-medium);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

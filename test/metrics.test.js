@@ -109,3 +109,14 @@ test('summarize SHOULD report the second metrics row of D-15 in full precision',
   assert.equal(summary.voc, 8 / 3);
   assert.equal(summary.share5, 100 / 3);
 });
+
+test('groupBy SHOULD order groups by ru collation, not by code unit', () => {
+  const slice = ['Ёмкость', 'Яблоко', 'аванс', 'Банк'].map((problem) =>
+    rating({ problem }),
+  );
+
+  assert.deepEqual(
+    groupBy(slice, (r) => r.problem).map(({ key }) => key),
+    ['аванс', 'Банк', 'Ёмкость', 'Яблоко'],
+  );
+});
