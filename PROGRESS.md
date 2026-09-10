@@ -26,10 +26,12 @@
 ## Этап 1 — данные
 
 - [x] Выбрать стек — без framework и bundler, ES-модули + CSS custom properties ([README](README.md#стек))
-- [ ] Генератор тестовых данных → `data/voc-dashboard.xlsx`
-- [ ] Скрипт проверки непротиворечивости данных
-- [ ] Конвертер `xlsx` → `site/data/*.json`
+- [x] Генератор тестовых данных → `data/voc-dashboard.xlsx` — детерминированный, ориентиры карточки соблюдены ([data-model §9](docs/data-model.md#9-тестовые-данные))
+- [x] Скрипт проверки непротиворечивости данных — `tools/check_data.py`, каждый инвариант проверен падением в `tools/test_pipeline.py`
+- [x] Конвертер `xlsx` → `site/data/*.json` — `tools/xlsx_to_json.py`
 - [ ] Подключить конвертер к deploy-workflow
+  - [x] step'ы проверки и конвертации добавлены в `deploy-pages.yml`
+  - [ ] зелёный deploy и доступность `site/data/manifest.json` по URL — проверяется после merge в `main`
 
 ## Этап 2 — каркас
 
