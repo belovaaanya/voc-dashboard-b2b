@@ -2,6 +2,10 @@
   Большая карточка: VOC текущего среза, объём, дельта к предыдущему
   аналогичному периоду и плановый коридор канала.
 
+  Композиция — `MetricCell/Big` из wireframe (design-spec §3.1): заголовок и
+  бейдж в шапке, дельта под бейджем справа, крупное значение слева внизу,
+  коридор и объём — справа от него. Геометрия наша (V-01…V-03).
+
   Заголовок ставит сама карточка: он обязан называть тот же срез, который
   показан числом. «VOC канала» над значением одного сегмента — то же
   противоречие интерфейса самому себе, от которого защищает D-22.
@@ -57,17 +61,15 @@ export function renderVocChannel(block, context) {
 
   block.setNote(badgeNode(value, plan));
 
+  /* Дельта стоит под бейджем отдельной строкой, значение и служебные подписи — рядом (§3.1) */
   const layout = element('div', 'metric metric--big');
-  layout.append(valueNode(formatVoc(value), 'metric__value--big'));
+  appendAll(layout, deltaNode(vocDelta(slice, previousSlice), undefined, 'trend--lead'));
 
-  const aside = appendAll(
-    element('div', 'metric__aside'),
-    deltaNode(vocDelta(slice, previousSlice)),
-    planCaptionNode(plan),
-    countNode(slice.length),
-    sufficiencyNode(slice),
-  );
-  layout.append(aside);
+  const row = element('div', 'metric__row');
+  row.append(valueNode(formatVoc(value), 'metric__value--big'));
+  row.append(appendAll(element('div', 'metric__aside'), planCaptionNode(plan), countNode(slice.length)));
+  layout.append(row);
 
+  appendAll(layout, sufficiencyNode(slice));
   block.setContent(layout);
 }

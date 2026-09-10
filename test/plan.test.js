@@ -6,6 +6,7 @@ import {
   BELOW_PLAN,
   IN_PLAN,
   planFor,
+  planForSlice,
   planStatus,
 } from '../site/js/plan.js';
 
@@ -50,6 +51,16 @@ test('D-42 planFor WHEN a non-segment filter narrows the slice SHOULD return nul
 
 test('D-42 planFor WHEN only a segment filter is set SHOULD still find the corridor', () => {
   const plan = planFor(PLANS, { channel: 'АБМ', segment: 'СБ', ...MAY, filters: { segment: ['СБ'] } });
+
+  assert.equal(plan.min, 4.8);
+});
+
+test('D-42 planForSlice WHEN two segments are selected SHOULD return null — that is neither channel nor segment', () => {
+  assert.equal(planForSlice(PLANS, { channel: 'АБМ', ...MAY, filters: { segment: ['ММБ', 'СБ'] } }), null);
+});
+
+test('D-42 planForSlice WHEN one segment is selected SHOULD take that segment corridor', () => {
+  const plan = planForSlice(PLANS, { channel: 'АБМ', ...MAY, filters: { segment: ['СБ'] } });
 
   assert.equal(plan.min, 4.8);
 });

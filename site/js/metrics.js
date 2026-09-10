@@ -5,8 +5,6 @@
  * отсутствие. Числа полной точности, округление на выводе (`D-21`).
  */
 
-import { roundDelta } from './round.js';
-
 export const MARKS = [1, 2, 3, 4, 5];
 
 /** `docs/data-model.md` §4. */
@@ -35,27 +33,33 @@ export function markDistribution(ratings) {
 }
 
 /**
- * Изменение VOC к предыдущему периоду. Пустой любой из двух срезов — `null`,
- * а не `0`: «сравнивать не с чем» и «не изменилось» — разные ответы.
+ * Изменение показателя к предыдущему периоду. Не определён любой из двух —
+ * `null`, а не `0`: «сравнивать не с чем» и «не изменилось» — разные ответы.
  */
-export function vocDelta(ratings, previousRatings) {
-  const current = voc(ratings);
-  const previous = voc(previousRatings);
+export function deltaOf(current, previous) {
   if (current === null || previous === null) return null;
+  if (!Number.isFinite(current) || !Number.isFinite(previous)) return null;
   return current - previous;
+}
+
+export function vocDelta(ratings, previousRatings) {
+  return deltaOf(voc(ratings), voc(previousRatings));
 }
 
 /**
  * Направление тренда выводится из знака дельты, а не задаётся отдельно
- * (`V-15`). Сравнивается **округлённая** дельта: иначе `+0,004` покажет
- * стрелку роста рядом с подписью `+0,00` и интерфейс возразит сам себе
- * (тот же принцип, что в `D-22`).
+ * (`V-15`).
+ *
+ * На вход идёт **уже округлённое до отображаемых знаков** число, и точность у
+ * каждого показателя своя: иначе `+0,04` п. п. показало бы стрелку роста рядом
+ * с подписью `+0,0` — то же противоречие, от которого защищает `D-22`. Пару
+ * «округление + формат» держит `DELTA_SHAPES` в `blocks/metric-card.js`, чтобы
+ * они не разъехались.
  */
-export function trendOf(delta) {
-  const shown = roundDelta(delta);
-  if (shown === null) return null;
-  if (shown > 0) return 'up';
-  return shown < 0 ? 'down' : 'flat';
+export function trendOf(shownDelta) {
+  if (shownDelta === null || shownDelta === undefined || !Number.isFinite(shownDelta)) return null;
+  if (shownDelta > 0) return 'up';
+  return shownDelta < 0 ? 'down' : 'flat';
 }
 
 export function groupBy(ratings, select) {

@@ -1,16 +1,34 @@
 /*
-  Общие части карточки метрики: дельта со стрелкой, бейдж плана, подпись
-  коридора, объём и пометка недостаточной выборки.
+  Общие части карточки метрики: дельта со стрелкой, точка тренда, бейдж плана,
+  подпись коридора, объём и пометка недостаточной выборки.
 
   Здесь только представление. Ни одного расчёта: значения приходят из
   metrics.js, plan.js и sufficiency.js, строки — из format.js (D-20).
 */
 
 import { element } from '../dom.js';
-import { formatCount, formatDelta, formatVoc } from '../format.js';
+import {
+  formatCount,
+  formatDelta,
+  formatDeltaCount,
+  formatDeltaShare,
+  formatVoc,
+} from '../format.js';
 import { trendOf } from '../metrics.js';
 import { ABOVE_PLAN, BELOW_PLAN, IN_PLAN, planStatus } from '../plan.js';
+import { roundCount, roundDelta, roundShare } from '../round.js';
 import { sampleSufficiency } from '../sufficiency.js';
+
+/*
+  Округление и формат дельты ходят парой: направление стрелки выводится из того
+  же числа, которое напечатано рядом. Разъехавшись, они дадут стрелку роста
+  рядом с подписью «+0,0» — то, от чего защищает D-22
+*/
+export const DELTA_SHAPES = {
+  voc: { round: roundDelta, format: formatDelta },
+  count: { round: roundCount, format: formatDeltaCount },
+  share: { round: roundShare, format: formatDeltaShare },
+};
 
 /* Стрелка и слово обязательны: цвет не единственный носитель смысла (D-26) */
 const TREND = {
@@ -30,19 +48,34 @@ export function valueNode(text, modifier) {
 }
 
 /** Направление берётся из знака дельты, а не задаётся отдельно (V-15). */
-export function deltaNode(delta) {
-  const trend = trendOf(delta);
+export function deltaNode(delta, shape = DELTA_SHAPES.voc, modifier) {
+  const shown = shape.round(delta);
+  const trend = trendOf(shown);
   if (!trend) return null;
 
-  const { arrow, caption, modifier } = TREND[trend];
-  const node = element('span', `trend ${modifier}`);
-  node.append(element('span', 'trend__value', formatDelta(delta)));
+  const { arrow, caption, modifier: trendModifier } = TREND[trend];
+  const node = element('span', `trend ${trendModifier}${modifier ? ` ${modifier}` : ''}`);
+  node.append(element('span', 'trend__value', shape.format(shown)));
 
   const glyph = element('span', 'trend__arrow', arrow);
   glyph.setAttribute('aria-hidden', 'true');
   node.append(glyph);
   node.append(element('span', 'visually-hidden', `, ${caption}`));
   return node;
+}
+
+/**
+ * Точка тренда в шапке карточки — из макета (`V-24`). Направление она несёт
+ * одним цветом, поэтому существует только рядом с дельтой, где то же
+ * направление названо стрелкой и знаком, и скрыта от screen reader.
+ */
+export function trendDotNode(delta, shape = DELTA_SHAPES.voc) {
+  const trend = trendOf(shape.round(delta));
+  if (!trend) return null;
+
+  const dot = element('span', `trend-dot ${TREND[trend].modifier}`);
+  dot.setAttribute('aria-hidden', 'true');
+  return dot;
 }
 
 export function badgeNode(value, plan) {
