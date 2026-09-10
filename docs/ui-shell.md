@@ -2,8 +2,9 @@
 
 Каркас, в который встают блоки дашборда: токены, сетка, загрузка данных,
 служебные состояния, шапка, состояние в URL и **контракт блока**. Самих блоков
-здесь нет: карточки метрик описаны в [blocks-metrics](blocks-metrics.md),
-график, тепловая карта, топ проблем, прямая речь и инсайты — в своих слайсах.
+здесь нет: карточки метрик описаны в [blocks-metrics](blocks-metrics.md), график
+— в [blocks-dynamics](blocks-dynamics.md), тепловая карта, топ проблем, прямая
+речь и инсайты — в своих слайсах.
 
 Связанные документы: [design-spec](design-spec.md) (замеры и палитра),
 [design-validation](design-validation.md) (`V-xx`), [decisions](decisions.md)
@@ -27,6 +28,8 @@ site/
 ├── js/url-state.js       чтение и запись query-параметров
 ├── js/controls.js        правила preset периода и выбора фильтров
 ├── js/selection.js       единый global/local select для всех блоков
+├── js/timeseries.js      интервалы и VOC временных рядов
+├── js/chart-geometry.js  координаты, линии и области SVG-графика
 ├── js/dimensions.js      список измерений и вывод их значений из данных
 ├── js/labels.js          подписи из справочника с fallback на код
 ├── js/block.js           карточка блока и три служебных состояния

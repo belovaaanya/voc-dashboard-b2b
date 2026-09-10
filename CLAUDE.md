@@ -15,6 +15,7 @@ Figma, данные — из файлов рядом с сайтом, backend н
 | [docs/ui-shell.md](docs/ui-shell.md) | каркас: токены, сетка, загрузка, состояния, URL; **контракт блока — перед новым блоком** |
 | [docs/controls-period-filters.md](docs/controls-period-filters.md) | контролы периода и фильтров, local period и accessibility |
 | [docs/blocks-metrics.md](docs/blocks-metrics.md) | карточки метрик: композиция, план, кликабельность |
+| [docs/blocks-dynamics.md](docs/blocks-dynamics.md) | график VOC: временные шкалы, SVG, план, объём и tooltip |
 | [docs/figma-sources.md](docs/figma-sources.md) | node ID, как перечитать макет |
 | [docs/calc-core.md](docs/calc-core.md) | **перед правкой чисел** — модули расчётов, инварианты, методика вклада |
 | [docs/slice-gate.md](docs/slice-gate.md) | проверка в конце слайса |
