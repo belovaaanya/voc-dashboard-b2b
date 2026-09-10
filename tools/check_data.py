@@ -614,11 +614,12 @@ def check_blank_markup(extract: Extract) -> list[str]:
 def check_label_gaps(extract: Extract) -> list[str]:
     """Обязан быть код без подписи: `D-02` требует показать в этом случае сам
     код, и без такого кода fallback непроверяем."""
+    # Измерения здесь канонические: лист приводит их при разборе (D-39).
     labelled = {(row.dimension, row.code) for row in extract.labels if row.label}
     for dimension, codes in (
-        ("сегмент", {rating.segment for rating in extract.ratings}),
-        ("тип проблемы", {r.problem_type for r in extract.ratings if r.problem_type}),
-        ("канал", set(extract.channels)),
+        ("segment", {rating.segment for rating in extract.ratings}),
+        ("problem_type", {r.problem_type for r in extract.ratings if r.problem_type}),
+        ("channel", set(extract.channels)),
     ):
         if any((dimension, code) not in labelled for code in codes):
             return []

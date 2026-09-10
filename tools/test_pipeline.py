@@ -254,7 +254,7 @@ def break_blank_markup(extract):
 
 def break_label_gaps(extract):
     extract.labels = extract.labels + [
-        vs.LabelRow(row=100 + index, dimension="тип проблемы", code=code, label=code)
+        vs.LabelRow(row=100 + index, dimension="problem_type", code=code, label=code)
         for index, code in enumerate(
             {rating.problem_type for rating in extract.ratings if rating.problem_type}
         )
@@ -487,9 +487,7 @@ def main() -> int:
         str(manifest["period"]),
     )
     run.expect(
-        set(reference["labels"]) <= set(cd.__dict__.get("DIMENSION_IDS", {}).values())
-        or all(key in ("channel", "segment", "problem_type", "domain", "problem", "operation", "kp", "product")
-               for key in reference["labels"]),
+        set(reference["labels"]) <= set(vs.LABEL_DIMENSIONS.values()),
         "измерения labels приведены к каноническим id (D-39)",
         str(list(reference["labels"])),
     )
@@ -516,17 +514,6 @@ def main() -> int:
         broken_mark.returncode != 0 and "MARK1_VALUE" in broken_mark.stderr,
         "конвертер сам отказывается писать нечисловую оценку",
         broken_mark.stderr[-200:],
-    )
-
-    unknown_dimension = workspace / "unknown-dimension.xlsx"
-    workbook = load_workbook(sample)
-    workbook[vs.LABELS_SHEET].cell(row=2, column=1).value = "регион"
-    workbook.save(unknown_dimension)
-    dimension = run_tool("xlsx_to_json.py", "--source", str(unknown_dimension), "--out", str(out))
-    run.expect(
-        dimension.returncode != 0 and "регион" in dimension.stderr,
-        "неизвестное измерение labels роняет сборку (D-39)",
-        dimension.stderr[-200:],
     )
 
     print("\n== несопоставленный триггер (D-12) ==")
@@ -564,13 +551,6 @@ def main() -> int:
     )
 
     print("\n== нормализация измерений (D-39) ==")
-    reference = json_file(out, "reference")
-    run.expect(
-        all(dimension in vs.LABEL_DIMENSIONS.values() for dimension in reference["labels"]),
-        "измерения приведены к каноническим id, а не к тому, что написано в листе",
-        str(list(reference["labels"])),
-    )
-
     typo = workspace / "typo-dimension.xlsx"
     workbook = load_workbook(sample)
     sheet = workbook[vs.LABELS_SHEET]

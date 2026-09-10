@@ -37,19 +37,6 @@ ROLES = ["ratings", "verbatim", "reference"]
 
 UNMAPPED_LABEL = "Без сопоставления"
 
-# Канонические id измерений (D-39): в xlsx аналитик пишет по-русски, а
-# соответствие живёт здесь, а не в браузере.
-DIMENSION_IDS = {
-    "канал": "channel",
-    "сегмент": "segment",
-    "область": "domain",
-    "тип проблемы": "problem_type",
-    "проблема": "problem",
-    "триггер": "operation",
-    "КП": "kp",
-    "продукт": "product",
-}
-
 # Флаг едет вместе с данными, чтобы правило D-05 не пришлось помнить в UI.
 NOT_FOR_DISPLAY = ["oslk_expertise_name"]
 
@@ -124,19 +111,12 @@ def build_reference(extract: Extract, unmapped: set[tuple[str, str]]) -> dict:
             "product": UNMAPPED_LABEL,
         }
 
+    # Измерения приходят уже каноническими: приведение и падение на
+    # неизвестном делает разбор листа (D-39).
     labels: dict[str, dict[str, str]] = {}
-    unknown = sorted({row.dimension for row in extract.labels if row.dimension not in DIMENSION_IDS})
-    if unknown:
-        raise ConversionError(
-            "неизвестные измерения на листе labels: "
-            + ", ".join(f"«{dimension}»" for dimension in unknown)
-            + ". Известные: "
-            + ", ".join(f"«{dimension}»" for dimension in DIMENSION_IDS)
-            + " (D-39). Опечатка молча лишила бы интерфейс подписей."
-        )
     for row in extract.labels:
         if row.label:
-            labels.setdefault(DIMENSION_IDS[row.dimension], {})[row.code] = row.label
+            labels.setdefault(row.dimension, {})[row.code] = row.label
 
     plan = [
         {
