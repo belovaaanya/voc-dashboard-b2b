@@ -81,6 +81,10 @@
   --chart-card-height: 326px;
   --chart-plot-height: 222px;
   --chart-tooltip-max: 220px;
+  --antidriver-card-height: 309px;
+  --antidriver-sparkline-width: 120px;
+  --heatmap-row-title-width: 132px;
+  --heatmap-cell-width: 80px;
 
   /* Прочее */
   --focus-ring: 2px;

@@ -51,7 +51,8 @@ export function formatDeltaShare(value) {
 }
 
 export function formatImpact(value) {
-  return formatNumber(value, 3);
+  if (!Number.isFinite(value)) return '—';
+  return `${value > 0 ? '+' : ''}${formatNumber(value, 3)}`;
 }
 
 export function formatCount(value) {
