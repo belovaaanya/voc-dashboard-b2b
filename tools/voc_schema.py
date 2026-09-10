@@ -34,6 +34,19 @@ PLAN_COLUMNS = ["канал", "сегмент", "период с", "период
 LABELS_SHEET = "labels"
 LABELS_COLUMNS = ["измерение", "код", "подпись"]
 
+# Аналитик пишет измерение по-русски (D-02), интерфейс знает канонические id.
+# Словарь живёт здесь, а не в браузере (D-39), и общий для конвертера и проверки.
+LABEL_DIMENSIONS = {
+    "канал": "channel",
+    "сегмент": "segment",
+    "триггер": "trigger",
+    "кп": "cp",
+    "продукт": "product",
+    "область": "domain",
+    "тип проблемы": "problem_type",
+    "проблема": "problem",
+}
+
 OPERATION_SEPARATOR = ";"
 
 SEGMENTS = ["ММБ", "СБ", "КИБ"]
@@ -239,9 +252,18 @@ def _read_labels(sheet):
         if row is None or all(cell is None for cell in row):
             continue
         cells = list(row) + [None] * (len(LABELS_COLUMNS) - len(row))
+        written = as_text(cells[0]) or ""
+        dimension = LABEL_DIMENSIONS.get(written.strip().lower())
+        if dimension is None:
+            known = ", ".join(sorted(LABEL_DIMENSIONS))
+            raise SchemaError(
+                f"лист {LABELS_SHEET!r}, строка {number}: неизвестное измерение "
+                f"{written!r}. Известные: {known}. Опечатка здесь молча лишила бы "
+                f"интерфейс подписей, поэтому разбор остановлен (D-39)"
+            )
         yield LabelRow(
             row=number,
-            dimension=as_text(cells[0]) or "",
+            dimension=dimension,
             code=as_text(cells[1]) or "",
             label=as_text(cells[2]),
         )

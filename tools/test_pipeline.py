@@ -320,6 +320,34 @@ def main() -> int:
         checked.stdout[-300:],
     )
 
+    print("\n== нормализация измерений (D-39) ==")
+    reference = json_file(out, "reference")
+    run.expect(
+        all(dimension in vs.LABEL_DIMENSIONS.values() for dimension in reference["labels"]),
+        "измерения приведены к каноническим id, а не к тому, что написано в листе",
+        str(list(reference["labels"])),
+    )
+
+    typo = workspace / "typo-dimension.xlsx"
+    workbook = load_workbook(sample)
+    sheet = workbook[vs.LABELS_SHEET]
+    written = sheet.cell(row=2, column=1).value
+    sheet.cell(row=2, column=1).value = f"{written}л"
+    workbook.save(typo)
+
+    broken = run_tool("xlsx_to_json.py", "--source", str(typo), "--out", str(out))
+    run.expect(
+        broken.returncode != 0 and f"{written}л" in broken.stderr,
+        "опечатка в измерении роняет конвертер и печатает написанное значение",
+        broken.stderr[-300:],
+    )
+    checked_labels = run_tool("check_data.py", "--source", str(typo))
+    run.expect(
+        checked_labels.returncode != 0,
+        "check_data тоже ловит опечатку в измерении",
+        (checked_labels.stdout + checked_labels.stderr)[-300:],
+    )
+
     print("\n== порог объёма (D-37) ==")
     over = run_tool(
         "xlsx_to_json.py", "--source", str(sample), "--out", str(out), "--max-gzip-mb", "0.01"
