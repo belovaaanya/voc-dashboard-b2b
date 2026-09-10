@@ -86,6 +86,8 @@
   --antidriver-sparkline-width: 120px;
   --heatmap-row-title-width: 132px;
   --heatmap-cell-width: 80px;
+  --verbatim-card-height: 141px;
+  --verbatim-table-height: 405px;
 
   /* Прочее */
   --focus-ring: 2px;

@@ -37,6 +37,8 @@ const REQUIRED_CONTEXT_KEYS = [
   'dimensions',
   'select',
   'setState',
+  'verbatim',
+  'requestVerbatim',
 ];
 
 test('AC-1 каждая запись реестра с рендерером ссылается на существующий модуль blocks/', () => {

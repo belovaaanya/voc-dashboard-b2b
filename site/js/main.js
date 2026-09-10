@@ -17,17 +17,20 @@ import { renderAntidrivers } from './blocks/antidrivers.js';
 import { renderInsights } from './blocks/insights.js';
 import { renderDistribution } from './blocks/distribution.js';
 import { renderConclusion } from './blocks/conclusion.js';
+import { renderVerbatimCards } from './blocks/verbatim-cards.js';
+import { renderVerbatimTable } from './blocks/verbatim-table.js';
 import { vocSegment } from './blocks/voc-segment.js';
 import { tally } from './blocks/tally.js';
 import { availableDimensions, channelsOf } from './dimensions.js';
 import { periodFromState } from './controls.js';
 import { renderHeader } from './header.js';
 import { createLabels } from './labels.js';
-import { hasRole, loadRatings, loadReference, loadSource } from './loader.js';
+import { hasRole, loadRatings, loadReference, loadSource, loadVerbatim as loadVerbatimFile } from './loader.js';
 import { groupBy } from './metrics.js';
 import { defaultPeriod } from './period.js';
 import { createSelector } from './selection.js';
 import { focusInPeriod, onStateChange, readState, syncState, toSearch, withFilter, writeState } from './url-state.js';
+import { validateVerbatim } from './verbatim.js';
 
 const NEXT_SLICE = 'Блок появится в следующем слайсе — здесь только каркас.';
 
@@ -43,7 +46,9 @@ const BLOCKS = [
   { id: 'distribution', title: 'Распределение оценок', host: 'rail-top', modifier: 'card--distribution', render: renderDistribution },
   { id: 'dynamics', title: 'Динамика VOC', host: 'main', modifier: 'card--dynamics', render: renderDynamics },
   { id: 'antidrivers', title: 'Антидрайверы', host: 'main', modifier: 'card--antidrivers', render: renderAntidrivers },
+  { id: 'verbatim-cards', title: 'Прямая речь', host: 'main', modifier: 'card--verbatim', render: renderVerbatimCards },
   { id: 'insights', title: 'Инсайты', host: 'rail-main', modifier: 'card--insights', render: renderInsights },
+  { id: 'verbatim-table', title: 'Прямая речь: детализация', host: 'full', modifier: 'card--verbatim-table', render: renderVerbatimTable },
 ];
 
 /* Порядок сегментных карточек — по числу оценок: крупный сегмент идёт первым, как в макете (D-01) */
@@ -58,8 +63,9 @@ function main() {
     header: document.getElementById('header'),
     metrics: document.getElementById('metrics'),
     'rail-top': document.getElementById('rail-top'),
-    main: document.getElementById('main'),
-    'rail-main': document.getElementById('rail-main'),
+      main: document.getElementById('main'),
+      'rail-main': document.getElementById('rail-main'),
+      full: document.getElementById('full'),
   };
 
   const blocks = new Map();
@@ -93,6 +99,24 @@ function main() {
       const segments = segmentsByVolume(rows);
       /* Период по умолчанию — из манифеста, а не из часов машины (D-41) */
       const fallbackPeriod = defaultPeriod(source.manifest.period);
+      let verbatim = { status: 'idle', data: null, error: null };
+      let verbatimPromise = null;
+
+      function requestVerbatim() {
+        if (verbatim.status !== 'idle') return verbatimPromise;
+        verbatim = { status: 'loading', data: null, error: null };
+        verbatimPromise ??= Promise.resolve()
+          .then(() => loadVerbatimFile(source))
+          .then((data) => {
+            validateVerbatim(data);
+            verbatim = { status: 'ready', data, error: null };
+          })
+          .catch((error) => {
+            verbatim = { status: 'error', data: null, error: error.message };
+          })
+          .finally(() => renderSafely(readState()));
+        return verbatimPromise;
+      }
 
       function render(requested) {
         const period = periodFromState(requested, fallbackPeriod, source.manifest.period);
@@ -129,6 +153,8 @@ function main() {
           segments,
           select,
           setState,
+          verbatim,
+          requestVerbatim,
         };
 
         renderHeader(hosts.header, {
