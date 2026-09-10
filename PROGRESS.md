@@ -21,7 +21,7 @@
 - [x] Инструкции для агентов → [CLAUDE.md](CLAUDE.md)
 - [x] Создать private-репозиторий и запушить — [belovaaanya/voc-dashboard-b2b](https://github.com/belovaaanya/voc-dashboard-b2b)
 - [x] Включить GitHub Pages — [belovaaanya.github.io/voc-dashboard-b2b](https://belovaaanya.github.io/voc-dashboard-b2b/); репозиторий переведён в public, потому что на бесплатном плане Pages для private недоступен
-- [ ] Убедиться, что deploy проходит зелёным
+- [x] Убедиться, что deploy проходит зелёным и страница отдаётся по URL
 
 ## Этап 1 — данные
 
