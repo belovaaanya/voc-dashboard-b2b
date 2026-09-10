@@ -306,6 +306,90 @@
   background: var(--color-positive);
 }
 
+/* ── Главный вывод (D-10, D-33, V-16, Figma 3204:2849) ──────────── */
+
+.card--summary {
+  min-height: calc(var(--space-10) * 4);
+}
+
+.card--summary .card__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+}
+
+.summary-ai {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: var(--space-8);
+  border: var(--divider-width) solid transparent;
+  border-radius: var(--radius-control);
+}
+
+.summary-row:hover,
+.summary-row:focus-visible {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  outline: none;
+}
+
+.summary-row__icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: var(--space-8);
+  height: var(--space-8);
+  place-items: center;
+  border-radius: var(--radius-control);
+  color: var(--summary-accent);
+  background: color-mix(in srgb, var(--summary-accent) 12%, transparent);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}
+
+.summary-row--positive {
+  --summary-accent: var(--color-positive);
+}
+
+.summary-row--negative {
+  --summary-accent: var(--color-negative);
+}
+
+.summary-row--neutral {
+  --summary-accent: var(--color-neutral);
+}
+
+.summary-row__text {
+  overflow: hidden;
+  min-width: 0;
+  color: var(--color-text-strong);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-row__factors {
+  color: var(--summary-accent);
+}
+
+.summary-unavailable {
+  display: grid;
+  min-height: calc(var(--space-8) * 2 + var(--space-2));
+  align-content: center;
+}
+
 /* ── Кликабельная карточка (P0 №7, D-31, V-26) ─────────────────────── */
 
 .metric__toggle {

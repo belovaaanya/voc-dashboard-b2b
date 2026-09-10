@@ -19,6 +19,7 @@ Figma, данные — из файлов рядом с сайтом, backend н
 | [docs/blocks-antidrivers.md](docs/blocks-antidrivers.md) | рейтинг антидрайверов и heatmap второго уровня |
 | [docs/blocks-insights.md](docs/blocks-insights.md) | инсайты, причины и связка выбранной даты между блоками |
 | [docs/blocks-distribution.md](docs/blocks-distribution.md) | распределение оценок 1–5 и согласованное округление долей |
+| [docs/blocks-conclusion.md](docs/blocks-conclusion.md) | главный вывод из факторов роста и снижения VOC |
 | [docs/figma-sources.md](docs/figma-sources.md) | node ID, как перечитать макет |
 | [docs/calc-core.md](docs/calc-core.md) | **перед правкой чисел** — модули расчётов, инварианты, методика вклада |
 | [docs/slice-gate.md](docs/slice-gate.md) | проверка в конце слайса |
