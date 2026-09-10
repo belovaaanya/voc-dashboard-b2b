@@ -550,6 +550,12 @@
   outline: none;
 }
 
+.chart-point.is-selected {
+  fill: var(--color-text-strong);
+  stroke: var(--color-positive);
+  stroke-width: var(--space-1);
+}
+
 .chart-tooltip {
   position: absolute;
   z-index: 2;
@@ -608,6 +614,22 @@
   color: var(--color-text-tertiary);
   font-size: var(--text-xs);
   white-space: nowrap;
+}
+
+.antidriver-focus-clear {
+  padding: var(--space-1) var(--space-2);
+  border: var(--divider-width) solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.antidriver-focus-clear:hover,
+.antidriver-focus-clear:focus-visible {
+  color: var(--color-text-strong);
 }
 
 .antidriver-tabs {
@@ -833,4 +855,173 @@
 .heatmap tr.is-focused .heatmap__row-title {
   color: var(--color-text-strong);
   font-weight: var(--weight-medium);
+}
+
+/* ── Инсайты (P0 №6, P1 №10–11, D-16, D-33, V-17, V-30) ─────────── */
+
+.card--insights {
+  min-height: var(--insights-card-height);
+}
+
+.card--insights .card__head {
+  align-items: center;
+}
+
+.card--insights .card__title {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-normal);
+}
+
+.card--insights .card__body,
+.insights {
+  flex: 1 1 auto;
+}
+
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.insight-ai {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.insight-sort {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+}
+
+.insight-sort__tab {
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.insight-sort__tab:hover,
+.insight-sort__tab:focus-visible {
+  color: var(--color-text-strong);
+}
+
+.insight-sort__tab[aria-selected='true'] {
+  background: var(--color-border-strong);
+  color: var(--color-text-strong);
+}
+
+.insight-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.insight-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: var(--space-10);
+  padding: var(--space-1) var(--space-2);
+  border: var(--divider-width) solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.insight-row:hover,
+.insight-row:focus-visible {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  outline: none;
+}
+
+.insight-row[aria-pressed='true'] {
+  border-color: var(--color-text-tertiary);
+  background: var(--color-surface-sunken);
+}
+
+.insight-row__headline,
+.insight-row__detail {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.insight-row__dot {
+  flex: 0 0 auto;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
+.insight-row--fall .insight-row__dot,
+.insight-row--fall .insight-row__delta {
+  color: var(--color-negative);
+}
+
+.insight-row--rise .insight-row__dot,
+.insight-row--rise .insight-row__delta {
+  color: var(--color-positive);
+}
+
+.insight-row__date {
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+.insight-row__kind {
+  overflow: hidden;
+  flex: 1 1 auto;
+  color: var(--color-text-strong);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insight-row__delta,
+.insight-row__voc {
+  flex: 0 0 auto;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.insight-row__detail {
+  padding-inline-start: var(--space-4);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.insight-row__cause {
+  overflow: hidden;
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insight-row__voc {
+  color: var(--color-text-secondary);
+}
+
+.insight-unavailable {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: center;
+  text-align: center;
 }

@@ -14,6 +14,7 @@ import { EMPTY, ERROR, LOADING, READY, createBlock } from './block.js';
 import { renderVocChannel } from './blocks/voc-channel.js';
 import { renderDynamics } from './blocks/dynamics.js';
 import { renderAntidrivers } from './blocks/antidrivers.js';
+import { renderInsights } from './blocks/insights.js';
 import { vocSegment } from './blocks/voc-segment.js';
 import { tally } from './blocks/tally.js';
 import { availableDimensions, channelsOf } from './dimensions.js';
@@ -24,7 +25,7 @@ import { hasRole, loadRatings, loadReference, loadSource } from './loader.js';
 import { groupBy } from './metrics.js';
 import { defaultPeriod } from './period.js';
 import { createSelector } from './selection.js';
-import { onStateChange, readState, syncState, toSearch, withFilter, writeState } from './url-state.js';
+import { focusInPeriod, onStateChange, readState, syncState, toSearch, withFilter, writeState } from './url-state.js';
 
 const NEXT_SLICE = 'Блок появится в следующем слайсе — здесь только каркас.';
 
@@ -39,7 +40,7 @@ const BLOCKS = [
   { id: 'summary', title: 'Главный вывод', host: 'rail-top' },
   { id: 'dynamics', title: 'Динамика VOC', host: 'main', modifier: 'card--dynamics', render: renderDynamics },
   { id: 'antidrivers', title: 'Антидрайверы', host: 'main', modifier: 'card--antidrivers', render: renderAntidrivers },
-  { id: 'insights', title: 'Инсайты', host: 'rail-main' },
+  { id: 'insights', title: 'Инсайты', host: 'rail-main', modifier: 'card--insights', render: renderInsights },
 ];
 
 /* Порядок сегментных карточек — по числу оценок: крупный сегмент идёт первым, как в макете (D-01) */
@@ -98,9 +99,11 @@ function main() {
           preset: period.preset,
           from: period.from,
           to: period.to,
+          focus: focusInPeriod(requested.focus, period),
         };
         /* Достроенное по умолчанию состояние дописывается в URL: пересланная ссылка обязана быть полной (D-31) */
-        if (toSearch(state) !== toSearch(requested)) syncState(state);
+        const currentLocation = window.location.search || window.location.pathname;
+        if (toSearch(state) !== currentLocation) syncState(state);
 
         const select = createSelector({ rows, state, period, dimensions, reference });
         const current = select();
