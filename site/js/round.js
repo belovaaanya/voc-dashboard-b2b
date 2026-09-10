@@ -11,6 +11,8 @@ const DELTA_DIGITS = 2;
 const IMPACT_DIGITS = 3;
 const COUNT_DIGITS = 0;
 const SHARE_DIGITS = 1;
+const SUM_EPSILON = 1e-8;
+const REMAINDER_EPSILON = 1e-9;
 
 export function roundVoc(value) {
   return round(value, VOC_DIGITS);
@@ -33,34 +35,66 @@ export function roundShare(value) {
   return round(value, SHARE_DIGITS);
 }
 
-/**
- * Доли распределения — целые проценты, сумма ровно `100` (requirements 3.7):
- * поэлементное округление даёт `99` или `101`, поэтому недостающее раздаётся
- * по наибольшему остатку. Входные доли обязаны давать `100` — иначе раздавать
- * нечего, и функция об этом сообщает.
- */
-export function roundShares(shares) {
+/** Доли распределения — десятые, сумма ровно `100` по методу наибольшего остатка (`D-40`). */
+export function roundShares(shares, weights = null) {
   if (shares.length === 0) return [];
   if (shares.some((share) => share === null || share === undefined)) {
     return shares.map(() => null);
   }
+  if (weights && (weights.length !== shares.length || weights.some((weight) => !Number.isFinite(weight)))) {
+    throw new Error('Веса распределения не соответствуют долям');
+  }
 
   const exact = shares.reduce((sum, share) => sum + share, 0);
-  if (Math.abs(exact - 100) > 0.5) {
+  if (Math.abs(exact - 100) > SUM_EPSILON) {
     throw new Error(`Доли не дают 100 и раздать нечего: ${exact}`);
   }
 
-  const rounded = shares.map((share) => Math.floor(share));
-  const spare = 100 - rounded.reduce((sum, share) => sum + share, 0);
+  const scale = 10 ** SHARE_DIGITS;
+  const totalUnits = 100 * scale;
+  const units = shares.map((share) => Math.floor(share * scale));
+  const spare = totalUnits - units.reduce((sum, share) => sum + share, 0);
   const byRemainder = shares
-    .map((share, index) => ({ index, remainder: share - Math.floor(share) }))
+    .map((share, index) => ({ index, remainder: share * scale - Math.floor(share * scale) }))
     .sort((left, right) => right.remainder - left.remainder || left.index - right.index);
 
-  for (const { index } of byRemainder.slice(0, Math.max(spare, 0))) {
-    rounded[index] += 1;
+  if (spare > 0) {
+    const cutoff = byRemainder[spare - 1].remainder;
+    const certain = byRemainder.filter(({ remainder }) => remainder > cutoff + REMAINDER_EPSILON);
+    const tied = byRemainder.filter(({ remainder }) => Math.abs(remainder - cutoff) <= REMAINDER_EPSILON);
+    for (const { index } of certain) units[index] += 1;
+
+    const needed = spare - certain.length;
+    const chosen = weights
+      ? closestWeightedChoice(tied, needed, units, shares, weights, scale)
+      : tied.slice(0, needed);
+    for (const { index } of chosen) units[index] += 1;
   }
 
-  return rounded;
+  return units.map((share) => share / scale);
+}
+
+function closestWeightedChoice(entries, needed, units, shares, weights, scale) {
+  const target = shares.reduce((sum, share, index) => sum + share * scale * weights[index], 0);
+  const base = units.reduce((sum, unit, index) => sum + unit * weights[index], 0);
+  let best = null;
+
+  function visit(start, chosen, weight) {
+    if (chosen.length === needed) {
+      const score = Math.abs(base + weight - target);
+      if (!best || score < best.score - REMAINDER_EPSILON) best = { chosen: [...chosen], score };
+      return;
+    }
+    for (let index = start; index <= entries.length - (needed - chosen.length); index += 1) {
+      const entry = entries[index];
+      chosen.push(entry);
+      visit(index + 1, chosen, weight + weights[entry.index]);
+      chosen.pop();
+    }
+  }
+
+  visit(0, [], 0);
+  return best?.chosen ?? [];
 }
 
 function round(value, digits) {
