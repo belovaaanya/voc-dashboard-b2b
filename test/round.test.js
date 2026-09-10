@@ -38,19 +38,20 @@ test('AC-7a roundShares SHOULD make displayed shares sum to exactly 100', () => 
   const rounded = roundShares(thirds);
 
   assert.equal(
-    rounded.reduce((sum, share) => sum + share, 0),
-    100,
+    rounded.reduce((sum, share) => sum + Math.round(share * 10), 0),
+    1000,
   );
   for (const [index, share] of rounded.entries()) {
     assert.ok(
-      Math.abs(share - thirds[index]) < 1,
-      `доля ${share} ушла от точной ${thirds[index]} больше чем на процент`,
+      Math.abs(share - thirds[index]) < 0.1,
+      `доля ${share} ушла от точной ${thirds[index]} больше чем на десятую`,
     );
   }
 });
 
-test('AC-7a roundShares SHOULD give the spare percent to the largest remainder', () => {
-  assert.deepEqual(roundShares([4.6, 7.2, 10.1, 25.3, 52.8]), [5, 7, 10, 25, 53]);
+test('AC-7a roundShares SHOULD give the spare tenth to the largest remainder', () => {
+  assert.deepEqual(roundShares([33.333333, 33.333333, 33.333334]), [33.3, 33.3, 33.4]);
+  assert.deepEqual(roundShares([4.64, 7.22, 10.11, 25.31, 52.72]), [4.7, 7.2, 10.1, 25.3, 52.7]);
 });
 
 test('AC-7a roundShares SHOULD leave already whole shares alone', () => {
@@ -72,5 +73,6 @@ test('rounding WHEN the value is not finite SHOULD report no value instead of Na
 
 test('roundShares WHEN the shares do not add up to 100 SHOULD refuse instead of inventing a total', () => {
   assert.throws(() => roundShares([10, 20]), /100/);
+  assert.throws(() => roundShares([50.2, 50.2]), /100/);
   assert.deepEqual(roundShares([]), []);
 });
